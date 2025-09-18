@@ -1,0 +1,8 @@
+{
+  "name": "Caffeine POS",
+  "short_name": "Caffeine",
+  "start_url": "/handheld/",
+  "display": "standalone",
+  "background_color": "#111714",
+  "theme_color": "#111714"
+}
