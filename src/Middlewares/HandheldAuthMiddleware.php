@@ -11,6 +11,9 @@ final class HandheldAuthMiddleware
     public static array $handheldwhitelist = [
         '/login',
         '/api/v1/login',
+        '/api/v1/getWaiters',
+        '/api/v1/getDashboardData',
+        '/api/v1/getRevenueTimeseries',
         '/api/v1/handheld/login',
         '/register',
         '/forgot-password',

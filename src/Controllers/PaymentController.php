@@ -40,6 +40,7 @@ class PaymentController
         $order = DB::table('orders')
             ->where('table_no', $tableNo)
             ->where('status', 'pending')
+            ->whereNull('paid_at')
             ->orderBy('id', 'desc')
             ->first(); // tek kayıt
         if (!$order) return null;
@@ -225,4 +226,108 @@ class PaymentController
     }
 
     }
+
+    public static function getMonthlyRevenueRaw(?int $year = null, ?int $month = null, ?int $branchId = null){
+    $now   = new \DateTimeImmutable('now');
+    $year  = $year  ?? (int)$now->format('Y');
+    $month = $month ?? (int)$now->format('m');
+
+    $start = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', sprintf('%04d-%02d-01 00:00:00', $year, $month));
+    $end   = $start->modify('first day of next month');
+
+    $where  = "status = 'completed' AND created_at >= ? AND created_at < ?";
+    $bind   = [$start->format('Y-m-d H:i:s'), $end->format('Y-m-d H:i:s')];
+
+    if ($branchId !== null) {
+        $where .= " AND branch_id = ?";
+        $bind[] = $branchId;
+    }
+
+    $total = (new DB('payments'))->query(
+        "SELECT COALESCE(SUM(amount),0) AS total FROM payments WHERE $where",
+        $bind,
+        'array'
+    )[0]['total'] ?? 0;
+
+    $byDay = (new DB('payments'))->query(
+        "SELECT DATE(created_at) AS day, COALESCE(SUM(amount),0) AS total
+         FROM payments WHERE $where
+         GROUP BY DATE(created_at) ORDER BY day ASC",
+        $bind,
+        'array'
+    );
+
+    $byMethod = (new DB('payments'))->query(
+        "SELECT method, COALESCE(SUM(amount),0) AS total
+         FROM payments WHERE $where
+         GROUP BY method ORDER BY total DESC",
+        $bind,
+        'array'
+    );
+
+    return round((float)$total, 2);
+
+}
+
+    // PaymentController.php içine ekle
+public static function getRevenueTimeseries(?int $year = null, ?int $month = null, ?int $branchId = null): void
+{
+    try {
+        // Ay aralığı [start, end)
+        $now   = new \DateTimeImmutable('now');
+        $year  = $year  ?? (int)$now->format('Y');
+        $month = $month ?? (int)$now->format('m');
+
+        $start = (new \DateTimeImmutable('today'))->modify('-6 days')->setTime(0,0,0);
+        $end   = (new \DateTimeImmutable('tomorrow'))->setTime(0,0,0);
+
+        // Ham SQL (builder'ında groupBy yok diye query() kullanıyoruz)
+        $where = "status='completed' AND created_at >= ? AND created_at < ?";
+        $bind  = [$start->format('Y-m-d H:i:s'), $end->format('Y-m-d H:i:s')];
+
+        if ($branchId !== null) {
+            $where .= " AND branch_id = ?";
+            $bind[] = $branchId;
+        }
+
+        // Gün-gün toplam (YYYY-MM-DD)
+        $rows = (new \App\Core\DB('payments'))->query(
+            "SELECT DATE(created_at) AS day, COALESCE(SUM(amount),0) AS total
+             FROM payments
+             WHERE $where
+             GROUP BY DATE(created_at)
+             ORDER BY day ASC",
+            $bind,
+            'array'
+        );
+
+        // Eksik günleri 0 ile doldur (grafikte kopukluk olmasın)
+        $labels = [];
+        $series = [];
+        for ($d = $start; $d < $end; $d = $d->modify('+1 day')) {
+            $key = $d->format('Y-m-d');
+            $labels[] = $key;
+            $series[$key] = 0.0;
+        }
+        foreach ($rows as $r) {
+            $series[$r['day']] = (float)$r['total'];
+        }
+        $data = array_values($series);
+
+        $total = array_sum($data);
+
+        echo \App\Utils\JsonKit::json([
+            'range'    => [$start->format('Y-m-d'), $end->modify('-1 day')->format('Y-m-d')],
+            'labels'   => $labels,         // ["2025-09-01", "2025-09-02", ...]
+            'data'     => $data,           // [95, 0, 165, 115, ...]
+            'currency' => 'TRY',
+            'total'    => round($total, 2)
+        ], 'Zamana göre gelir', 200);
+
+    } catch (\Throwable $e) {
+        echo \App\Utils\JsonKit::fail('Hata: '.$e->getMessage(), 500);
+    }
+}
+
+
 }

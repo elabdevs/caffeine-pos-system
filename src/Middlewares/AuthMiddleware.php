@@ -11,9 +11,7 @@ final class AuthMiddleware
     public static array $whitelist = [
         '/login',
         '/api/v1/login',
-        '/api/v1/handheld/login',
-        '/api/v1/handheld/createOrder',
-        '/api/v1/handheld/settle',
+        '/api/v1/handheld/',
         '/register',
         '/forgot-password',
         '/auth/refresh',

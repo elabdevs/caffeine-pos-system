@@ -20,48 +20,48 @@
 						<div class="widget glassmorphism p-6 flex flex-col justify-between">
 							<div>
 								<div class="flex justify-between items-center">
-									<p class="text-lg font-semibold text-white/80">Toplam Gelir</p>
+									<p class="text-lg font-semibold text-white/80">Aylık Ciro</p>
 									<span class="material-symbols-outlined text-cyan-300">attach_money</span>
 								</div>
-								<p class="text-3xl lg:text-4xl font-bold mt-2">$45,231.89</p>
+								<p class="text-3xl lg:text-4xl font-bold mt-2" id="monthlyRevenue">-</p>
 							</div>
-							<p class="text-sm text-green-400 flex items-center mt-2">
+							<p class="text-sm text-green-400 flex items-center mt-2" id="revDelta">
 								<span class="material-symbols-outlined text-base mr-1">arrow_upward</span> +20.1% from last month
 							</p>
 						</div>
 						<div class="widget glassmorphism p-6 flex flex-col justify-between">
 							<div>
 								<div class="flex justify-between items-center">
-									<p class="text-lg font-semibold text-white/80">Abonelikler</p>
+									<p class="text-lg font-semibold text-white/80">Aktif Garsonlar</p>
 									<span class="material-symbols-outlined text-purple-300">subscriptions</span>
 								</div>
-								<p class="text-3xl lg:text-4xl font-bold mt-2">+2,350</p>
+								<p class="text-3xl lg:text-4xl font-bold mt-2" id="waitersCount">-</p>
 							</div>
-							<p class="text-sm text-green-400 flex items-center mt-2">
+							<p class="text-sm text-green-400 flex items-center mt-2" id="waitDelta">
 								<span class="material-symbols-outlined text-base mr-1">arrow_upward</span> +180.1% from last month
 							</p>
 						</div>
 						<div class="widget glassmorphism p-6 flex flex-col justify-between">
 							<div>
 								<div class="flex justify-between items-center">
-									<p class="text-lg font-semibold text-white/80">Satışlar</p>
+									<p class="text-lg font-semibold text-white/80">Aylık Sipariş</p>
 									<span class="material-symbols-outlined text-pink-300">shopping_cart</span>
 								</div>
-								<p class="text-3xl lg:text-4xl font-bold mt-2">+12,234</p>
+								<p class="text-3xl lg:text-4xl font-bold mt-2" id="monthlyOrder">-</p>
 							</div>
-							<p class="text-sm text-green-400 flex items-center mt-2">
+							<p class="text-sm text-green-400 flex items-center mt-2" id="orderDelta">
 								<span class="material-symbols-outlined text-base mr-1">arrow_upward</span> +19% from last month
 							</p>
 						</div>
 						<div class="widget glassmorphism p-6 flex flex-col justify-between">
 							<div>
 								<div class="flex justify-between items-center">
-									<p class="text-lg font-semibold text-white/80">Şu Anda Aktif</p>
+									<p class="text-lg font-semibold text-white/80">Mesaideki Garsonlar</p>
 									<span class="material-symbols-outlined text-amber-300">electric_bolt</span>
 								</div>
-								<p class="text-3xl lg:text-4xl font-bold mt-2">+573</p>
+								<p class="text-3xl lg:text-4xl font-bold mt-2" id="workingWaiters">-</p>
 							</div>
-							<p class="text-sm text-red-400 flex items-center mt-2">
+							<p class="text-sm text-red-400 flex items-center mt-2" id="workingDelta">
 								<span class="material-symbols-outlined text-base mr-1">arrow_downward</span> -2.8% from yesterday
 							</p>
 						</div>
@@ -127,114 +127,223 @@
 				</main>
 			</div>
 		</div>
-		<script>
-			// Toggle mobile menu
-			const menuToggle = document.getElementById('menu-toggle');
-			const navMenu = document.getElementById('nav-menu');
-			menuToggle.addEventListener('click', () => {
-			    navMenu.classList.toggle('hidden');
-			});
-			// Mock data for charts
-			const revenueData = {
-			    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-			    datasets: [{
-			        label: 'Revenue',
-			        data: [12000, 19000, 30000, 25000, 22000, 38000, 41000],
-			        borderColor: 'rgba(56, 189, 248, 0.8)',
-			        backgroundColor: 'rgba(56, 189, 248, 0.2)',
-			        fill: true,
-			        tension: 0.4,
-			        pointBackgroundColor: 'rgba(56, 189, 248, 1)',
-			        pointBorderColor: '#fff',
-			        pointHoverRadius: 7,
-			        pointHoverBackgroundColor: '#fff',
-			        pointHoverBorderColor: 'rgba(56, 189, 248, 1)',
-			    }]
-			};
-			const salesData = {
-			    labels: ['North America', 'Europe', 'Asia', 'South America', 'Africa'],
-			    datasets: [{
-			        label: 'Sales by Region',
-			        data: [3500, 2500, 1500, 1000, 500],
-			        backgroundColor: [
-			            'rgba(56, 189, 248, 0.7)',
-			            'rgba(167, 139, 250, 0.7)',
-			            'rgba(244, 114, 182, 0.7)',
-			            'rgba(251, 191, 36, 0.7)',
-			            'rgba(52, 211, 153, 0.7)',
-			        ],
-			        borderColor: [
-			            'rgba(56, 189, 248, 1)',
-			            'rgba(167, 139, 250, 1)',
-			            'rgba(244, 114, 182, 1)',
-			            'rgba(251, 191, 36, 1)',
-			            'rgba(52, 211, 153, 1)',
-			        ],
-			        borderWidth: 1,
-			        hoverOffset: 10
-			    }]
-			};
-			// Chart.js configuration
-			const chartOptions = (isLineChart = true) => ({
-			    maintainAspectRatio: false,
-			    responsive: true,
-			    plugins: {
-			        legend: {
-			            display: isLineChart ? false : true,
-			            position: 'bottom',
-			            labels: {
-			                color: 'rgba(255, 255, 255, 0.8)',
-			                padding: 20,
-			                font: {
-			                    size: 14
-			                }
-			            }
-			        },
-			        tooltip: {
-			            backgroundColor: 'rgba(0, 0, 0, 0.7)',
-			            titleFont: {
-			                size: 14
-			            },
-			            bodyFont: {
-			                size: 12
-			            },
-			            padding: 10,
-			            cornerRadius: 8,
-			            displayColors: false,
-			        }
-			    },
-			    scales: isLineChart ? {
-			        x: {
-			            ticks: {
-			                color: 'rgba(255, 255, 255, 0.7)'
-			            },
-			            grid: {
-			                color: 'rgba(255, 255, 255, 0.1)'
-			            }
-			        },
-			        y: {
-			            ticks: {
-			                color: 'rgba(255, 255, 255, 0.7)'
-			            },
-			            grid: {
-			                color: 'rgba(255, 255, 255, 0.1)'
-			            }
-			        }
-			    } : {}
-			});
-			// Render Charts
-			const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-			new Chart(revenueCtx, {
-			    type: 'line',
-			    data: revenueData,
-			    options: chartOptions()
-			});
-			const salesCtx = document.getElementById('salesChart').getContext('2d');
-			new Chart(salesCtx, {
-			    type: 'doughnut',
-			    data: salesData,
-			    options: chartOptions(false)
-			});
-		</script>
+<script>
+  // ----------------- DOM -----------------
+  const menuToggle       = document.getElementById('menu-toggle');
+  const navMenu          = document.getElementById('nav-menu');
+
+  const monthlyRevenueEl = document.getElementById('monthlyRevenue');
+  const waitersCountEl   = document.getElementById('waitersCount');
+  const monthlyOrderEl   = document.getElementById('monthlyOrder');
+  const workingWaitersEl = document.getElementById('workingWaiters');
+
+  const revDeltaEl       = document.getElementById('revDelta');
+  const waitDeltaEl      = document.getElementById('waitDelta');
+  const orderDeltaEl     = document.getElementById('orderDelta');
+  const workingDeltaEl   = document.getElementById('workingDelta');
+
+  menuToggle?.addEventListener('click', () => navMenu?.classList.toggle('hidden'));
+
+  // ----------------- Utils -----------------
+  const fmtTRY = n =>
+    new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 })
+      .format(Number(n ?? 0));
+
+  const pct = (cur, prev) => {
+    cur = Number(cur || 0); prev = Number(prev || 0);
+    if (prev === 0) return cur > 0 ? 100 : 0; // ∞ yerine 100 kabul
+    return ((cur - prev) / prev) * 100;
+  };
+
+  const setDelta = (el, value, periodText = 'geçen aya göre') => {
+    if (!el) return;
+    const up = value >= 0;
+    const cls = up ? 'text-green-400' : 'text-red-400';
+    const icon = up ? 'arrow_upward' : 'arrow_downward';
+    el.className = `text-sm ${cls} flex items-center mt-2`;
+    el.innerHTML = `<span class="material-symbols-outlined text-base mr-1">${icon}</span> ${value >= 0 ? '+' : ''}${value.toFixed(1)}% ${periodText}`;
+  };
+
+  // ----------------- KPI Fetch -----------------
+  async function loadDashboard() {
+    try {
+      const res = await fetch('/api/v1/getDashboardData', {
+        headers: { 'Accept': 'application/json' },
+        cache: 'no-store'
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+
+      const raw = await res.json();
+      // endpoint bazen `{"status":..,"message":..,"data": {...}}` şeklinde olabilir
+      const d = raw?.data ?? raw;
+
+      // Sayılar
+      monthlyRevenueEl.textContent = fmtTRY(d.monthlyRevenue);
+      waitersCountEl.textContent   = d.waitersCount   ?? '-';
+      monthlyOrderEl.textContent   = d.monthlyOrders  ?? '-';
+      workingWaitersEl.textContent = d.workingWaiters ?? '-';
+
+      // Yüzde farklar (MoM). *_prev yoksa 0 sayar.
+      setDelta(revDeltaEl,   pct(d.monthlyRevenue, d.monthlyRevenue_prev), 'geçen aya göre');
+      setDelta(orderDeltaEl, pct(d.monthlyOrders,  d.monthlyOrders_prev),  'geçen aya göre');
+      setDelta(waitDeltaEl,  pct(d.waitersCount,   d.waitersCount_prev),   'geçen aya göre');
+
+      // Çalışan garsonlar: örnek DoD kıyas (ismini sen nasıl beslersen)
+      setDelta(workingDeltaEl, pct(d.workingWaiters, d.workingWaiters_prev), 'düne göre');
+    } catch (err) {
+      console.error('Dashboard verisi çekilemedi:', err);
+      [monthlyRevenueEl, waitersCountEl, monthlyOrderEl, workingWaitersEl].forEach(el => el && (el.textContent = '—'));
+      [revDeltaEl, waitDeltaEl, orderDeltaEl, workingDeltaEl].forEach(el => el && (el.textContent = ''));
+    }
+  }
+
+  // ----------------- Revenue (Mon→Sun sabit) -----------------
+  const WEEK_LABELS_TR = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+  const mondayIndex    = jsDay => (jsDay + 6) % 7; // JS: 0=Sun..6=Sat -> 0=Mon..6=Sun
+
+  async function loadRevenueChart() {
+    try {
+      const res = await fetch('/api/v1/getRevenueTimeseries', {
+        headers: { 'Accept': 'application/json' },
+        cache: 'no-store'
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+
+      const raw      = await res.json();
+      const payload  = raw?.data ?? raw;
+      const dates    = payload.labels ?? [];                 // ISO 'YYYY-MM-DD' (son 7 gün)
+      const values   = (payload.data ?? []).map(Number);
+
+      // Pzt→Paz sabit sıraya kovala
+      const series   = Array(7).fill(0);
+      const dateHint = Array(7).fill(null);
+      for (let i = 0; i < dates.length; i++) {
+        const iso = dates[i];
+        const v   = values[i] ?? 0;
+        const d   = new Date(iso + 'T00:00:00');
+        const idx = mondayIndex(d.getDay());
+        series[idx]   = v;
+        dateHint[idx] = iso;
+      }
+
+      const ctx = document.getElementById('revenueChart')?.getContext('2d');
+      if (!ctx) return;
+
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: WEEK_LABELS_TR,
+          datasets: [{
+            label: 'Gelir',
+            data: series,
+            borderColor: 'rgba(56, 189, 248, 0.8)',
+            backgroundColor: 'rgba(56, 189, 248, 0.2)',
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: 'rgba(56, 189, 248, 1)',
+            pointBorderColor: '#fff',
+            pointHoverRadius: 6,
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgba(56, 189, 248, 1)'
+          }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(0,0,0,0.7)',
+              displayColors: false,
+              callbacks: {
+                title: items => items.map(it => it.label), // Pazartesi...
+                label: ctx => `${fmtTRY(ctx.parsed.y)}${dateHint[ctx.dataIndex] ? ' (' + dateHint[ctx.dataIndex] + ')' : ''}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: 'rgba(255,255,255,0.8)' },
+              grid:  { color: 'rgba(255,255,255,0.1)' }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { color: 'rgba(255,255,255,0.8)' },
+              grid:  { color: 'rgba(255,255,255,0.1)' }
+            }
+          }
+        }
+      });
+    } catch (err) {
+      console.error('Gelir grafiği yüklenemedi:', err);
+    }
+  }
+
+  // ----------------- Sales doughnut (dummy) -----------------
+  function loadSalesChartDummy() {
+    const ctx = document.getElementById('salesChart')?.getContext('2d');
+    if (!ctx) return;
+
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['North America', 'Europe', 'Asia', 'South America', 'Africa'],
+        datasets: [{
+          label: 'Sales by Region',
+          data: [3500, 2500, 1500, 1000, 500],
+          backgroundColor: [
+            'rgba(56, 189, 248, 0.7)',
+            'rgba(167, 139, 250, 0.7)',
+            'rgba(244, 114, 182, 0.7)',
+            'rgba(251, 191, 36, 0.7)',
+            'rgba(52, 211, 153, 0.7)'
+          ],
+          borderColor: [
+            'rgba(56, 189, 248, 1)',
+            'rgba(167, 139, 250, 1)',
+            'rgba(244, 114, 182, 1)',
+            'rgba(251, 191, 36, 1)',
+            'rgba(52, 211, 153, 1)'
+          ],
+          borderWidth: 1,
+          hoverOffset: 10
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'bottom',
+            labels: {
+              color: 'rgba(255, 255, 255, 0.8)',
+              padding: 20,
+              font: { size: 14 }
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            titleFont: { size: 14 },
+            bodyFont: { size: 12 },
+            padding: 10,
+            cornerRadius: 8,
+            displayColors: false
+          }
+        }
+      }
+    });
+  }
+
+  // ----------------- Boot -----------------
+  document.addEventListener('DOMContentLoaded', () => {
+    loadDashboard();
+    loadRevenueChart();
+    loadSalesChartDummy();
+  });
+</script>
+
+
+
 	</body>
 </html>

@@ -84,9 +84,6 @@
         <h2 class="text-lg font-bold">Hızlı İşlemler</h2>
         <div class="mt-4 grid grid-cols-2 gap-4">
           <button class="h-14 rounded-2xl bg-[var(--primary)] text-[var(--bg)] text-sm font-extrabold active:scale-[0.99] shadow-[0_10px_30px_-12px_rgba(56,224,123,0.7)]" id="btnNewOrder">
-            Yeni Sipariş
-          </button>
-          <button class="h-14 rounded-2xl bg-[var(--surface-2)] text-[var(--txt)] text-sm font-bold active:scale-[0.99]" id="btnTables">
             Masalar
           </button>
           <button class="h-14 rounded-2xl bg-[var(--surface-2)] text-[var(--txt)] text-sm font-bold active:scale-[0.99]" id="btnOrders">
@@ -94,6 +91,9 @@
           </button>
           <button class="h-14 rounded-2xl bg-[var(--surface-2)] text-[var(--txt)] text-sm font-bold active:scale-[0.99]" id="btnPayments">
             Profil
+          </button>
+          <button class="h-14 rounded-2xl bg-[var(--surface-2)] text-[var(--txt)] text-sm font-bold active:scale-[0.99]" id="btnTables">
+            Çıkış Yap
           </button>
         </div>
       </section>

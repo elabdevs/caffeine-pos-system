@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Utils\JsonKit;
 use App\Models\User;
 use App\Controllers\OrdersController;
+use App\Controllers\WaitersController;
 
 class APIv1Controller
 {
@@ -296,4 +297,88 @@ class APIv1Controller
         PaymentController::savePayment();
     }
 
+    public function updateTableStatus($table_no){
+        TablesController::updateTableStatus($table_no);
+    }
+
+    public function getWaiters(){
+        WaitersController::getWaiters($_SESSION['branch_id']);
+    }
+
+// örnek: DashboardController veya PaymentController içinde
+public static function getDashboardData(): void
+{
+    try {
+        $now      = new \DateTimeImmutable('now');
+        $curStart = $now->modify('first day of this month')->setTime(0,0,0);
+        $nextStart= $curStart->modify('first day of next month');
+        $prevStart= $curStart->modify('first day of last month');
+
+        // ---- Aylık ciro (payments)
+        $revCur = (new \App\Core\DB('payments'))->query(
+            "SELECT COALESCE(SUM(amount),0) total
+             FROM payments
+             WHERE status='completed' AND created_at >= ? AND created_at < ?",
+            [$curStart->format('Y-m-d H:i:s'), $nextStart->format('Y-m-d H:i:s')], 'array'
+        )[0]['total'] ?? 0;
+
+        $revPrev = (new \App\Core\DB('payments'))->query(
+            "SELECT COALESCE(SUM(amount),0) total
+             FROM payments
+             WHERE status='completed' AND created_at >= ? AND created_at < ?",
+            [$prevStart->format('Y-m-d H:i:s'), $curStart->format('Y-m-d H:i:s')], 'array'
+        )[0]['total'] ?? 0;
+
+        // ---- Aylık sipariş adedi (kapanan siparişler)
+        $ordCur = (new \App\Core\DB('orders'))->query(
+            "SELECT COUNT(*) cnt FROM orders
+             WHERE paid_at IS NOT NULL AND paid_at >= ? AND paid_at < ?",
+            [$curStart->format('Y-m-d H:i:s'), $nextStart->format('Y-m-d H:i:s')], 'array'
+        )[0]['cnt'] ?? 0;
+
+        $ordPrev = (new \App\Core\DB('orders'))->query(
+            "SELECT COUNT(*) cnt FROM orders
+             WHERE paid_at IS NOT NULL AND paid_at >= ? AND paid_at < ?",
+            [$prevStart->format('Y-m-d H:i:s'), $curStart->format('Y-m-d H:i:s')], 'array'
+        )[0]['cnt'] ?? 0;
+
+        // ---- Aktif garsonlar (o ay en az 1 siparişi kapanmış benzersiz garson)
+        $waitCur = (new \App\Core\DB('orders'))->query(
+            "SELECT COUNT(DISTINCT user_id) c FROM orders
+             WHERE user_id IS NOT NULL AND paid_at IS NOT NULL
+               AND paid_at >= ? AND paid_at < ?",
+            [$curStart->format('Y-m-d H:i:s'), $nextStart->format('Y-m-d H:i:s')], 'array'
+        )[0]['c'] ?? 0;
+
+        $waitPrev = (new \App\Core\DB('orders'))->query(
+            "SELECT COUNT(DISTINCT user_id) c FROM orders
+             WHERE user_id IS NOT NULL AND paid_at IS NOT NULL
+               AND paid_at >= ? AND paid_at < ?",
+            [$prevStart->format('Y-m-d H:i:s'), $curStart->format('Y-m-d H:i:s')], 'array'
+        )[0]['c'] ?? 0;
+
+        // ---- MESAİDEKİ garsonlar (günün anlık sayısı; DoD kıyas istersen düne bak)
+
+        echo \App\Utils\JsonKit::json([
+            'monthlyRevenue'      => (float)$revCur,
+            'monthlyRevenue_prev' => (float)$revPrev,
+
+            'monthlyOrders'       => (int)$ordCur,
+            'monthlyOrders_prev'  => (int)$ordPrev,
+
+            'waitersCount'        => (int)$waitCur,
+            'waitersCount_prev'   => (int)$waitPrev,
+
+            'workingWaiters'      => (int)1,
+            'workingWaiters_prev' => (int)1 // ya da dünkü sayı
+        ], 'Anasayfa verileri getirildi', 200);
+    } catch (\Throwable $e) {
+        echo \App\Utils\JsonKit::fail('Hata: '.$e->getMessage(), 500);
+    }
+}
+
+
+    public function getRevenueTimeseries(){
+        PaymentController::getRevenueTimeseries(null, null, $_SESSION['branch_id']);
+    }
 }

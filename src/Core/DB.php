@@ -52,6 +52,11 @@ public static function getSharedConnection() {
     return self::$sharedConnection;
 }
 
+public function whereNull($column) {
+    $this->whereRaw[] = ["{$column} IS NULL", []];
+    return $this;
+}
+
 
     public static function table($table) {
         return new self($table);

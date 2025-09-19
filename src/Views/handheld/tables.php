@@ -52,7 +52,7 @@
     <!-- Üst bar -->
     <header class="safe-top px-4 pt-2 sticky top-0 z-20 bg-gradient-to-b from-[#0f1512] to-transparent">
       <div class="h-12 flex items-center justify-between">
-      <button onclick="window.history.back()" class="size-10 grid place-items-center rounded-xl bg-[var(--surface)] text-[var(--muted)]">
+      <button onclick="window.location.href ='/handheld/dashboard'" class="size-10 grid place-items-center rounded-xl bg-[var(--surface)] text-[var(--muted)]">
         <span class="material-symbols-outlined icon">arrow_back_ios_new</span>
       </button>
         <div class="text-base font-semibold">Tables</div>

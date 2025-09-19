@@ -50,7 +50,7 @@ $table = \App\Controllers\TablesController::getTableByCode(
 <div class="app relative">
   <header class="safe-top px-4 pt-2 sticky top-0 z-20 bg-gradient-to-b from-[#0f1512]/95 to-transparent backdrop-blur">
     <div class="h-12 flex items-center justify-between">
-      <button onclick="window.history.back()" class="size-10 grid place-items-center rounded-xl bg-[var(--surface)] text-[var(--muted)]">
+      <button onclick="window.location.href = '/handheld/tables'" class="size-10 grid place-items-center rounded-xl bg-[var(--surface)] text-[var(--muted)]">
         <span class="material-symbols-outlined icon">arrow_back_ios_new</span>
       </button>
       <div class="text-base font-semibold flex items-center gap-2">
@@ -379,7 +379,27 @@ $table = \App\Controllers\TablesController::getTableByCode(
   $('#btnPay').addEventListener('click', ()=>{ vibrate(6); window.location.href = "/handheld/payment/" + CONTEXT.table_no; });
   <?php endif; ?>
   <?php if(($table['status'] ?? null) == "cleaning"): ?>
-  $('#btnClear').addEventListener('click', ()=>{ vibrate(6); window.location.href = "/handheld/asdasd/" + CONTEXT.table_no; });
+    document.querySelector('#btnClear').addEventListener('click', () => {
+      vibrate(6);
+
+      fetch("/api/v1/handheld/updateTableStatus/" + CONTEXT.table_no, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+              "X-CSRF-Token": getCsrf()
+          },
+          body: JSON.stringify({
+              status: "available"
+          })
+      })
+      .then(res => res.json())
+      .then(data => {
+          window.location.href = "/handheld/tables";
+      })
+      .catch(err => {
+          console.error("Hata:", err);
+      });
+  });
   <?php endif; ?>
 
   function calcTotals(){

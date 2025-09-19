@@ -43,7 +43,7 @@ public static function createOrder(){
 
         $row = $ordersDb->query(
             'SELECT id FROM orders
-             WHERE branch_id = ? AND table_no = ? AND status = ?
+             WHERE branch_id = ? AND table_no = ? AND status = ? AND paid_at IS NULL
              ORDER BY id DESC
              LIMIT 1
              FOR UPDATE',
@@ -123,5 +123,46 @@ public static function createOrder(){
         echo JsonKit::fail('İşlem başarısız: '.$e->getMessage(), 500);
     }
 }
+
+    public static function getMonthlyOrders(?int $year = null,?int $month = null,?int $branchId = null,bool $onlyPaid = true) {
+    try {
+        // Ay aralığı [start, end)
+        $now   = new \DateTimeImmutable('now');
+        $year  = $year  ?? (int)$now->format('Y');
+        $month = $month ?? (int)$now->format('m');
+
+        $start = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', sprintf('%04d-%02d-01 00:00:00', $year, $month));
+        $end   = $start->modify('first day of next month');
+
+        // onlyPaid=true ise paid_at'e göre say, yoksa created_at'e göre
+        $dateCol = $onlyPaid ? 'paid_at' : 'created_at';
+
+        $where = [];
+        $bind  = [];
+
+        if ($onlyPaid) {
+            $where[] = "$dateCol IS NOT NULL";
+        }
+        $where[] = "$dateCol >= ?";
+        $where[] = "$dateCol < ?";
+        $bind[]  = $start->format('Y-m-d H:i:s');
+        $bind[]  = $end->format('Y-m-d H:i:s');
+
+        if ($branchId !== null) {
+            $where[] = "branch_id = ?";
+            $bind[]  = $branchId;
+        }
+
+        $sql = "SELECT COUNT(*) AS cnt FROM orders WHERE " . implode(' AND ', $where);
+        $row = (new \App\Core\DB('orders'))->query($sql, $bind, 'array');
+        $count = (int)($row[0]['cnt'] ?? 0);
+
+        return $count;
+
+    } catch (\Throwable $e) {
+        echo JsonKit::fail('Hata: '.$e->getMessage(), 500);
+    }
+}
+
 
 }
