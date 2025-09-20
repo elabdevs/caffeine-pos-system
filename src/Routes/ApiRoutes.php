@@ -13,6 +13,14 @@ class ApiRoutes
             $router->get('/getWaiters', [\App\Controllers\APIv1Controller::class, 'getWaiters']);
             $router->get('/getDashboardData', [\App\Controllers\APIv1Controller::class, 'getDashboardData']);
             $router->get('/getRevenueTimeseries', [\App\Controllers\APIv1Controller::class, 'getRevenueTimeseries']);
+            $router->get('/waiterOrders', [\App\Controllers\APIv1Controller::class, 'waiterOrders']);
+            $router->get('/productBreakdown', [\App\Controllers\APIv1Controller::class, 'productBreakdown']);
+            $router->get('/paymentMethods', [\App\Controllers\APIv1Controller::class, 'paymentMethods']);
+            $router->get('/staffPerformance', [\App\Controllers\APIv1Controller::class, 'staffPerformance']);
+            $router->get('/kpiStats', [\App\Controllers\APIv1Controller::class, 'getKPIStats']);
+            $router->get('/revenueByCategory', [\App\Controllers\APIv1Controller::class, 'revenueByCategory']);
+            $router->get('/revenueByTable', [\App\Controllers\APIv1Controller::class, 'revenueByTable']);
+            $router->get('/getAllUsers', [\App\Controllers\APIv1Controller::class, 'getAllUsers']);
             
         });
 

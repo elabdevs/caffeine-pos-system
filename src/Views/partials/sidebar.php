@@ -10,23 +10,23 @@
 			</button>
 		</div>
 		<nav class="hidden xl:block space-y-3" id="nav-menu">
-			<a class="flex items-center space-x-3 px-4 py-3 rounded-lg <?php if($_SERVER['REQUEST_URI'] == '/dashboard'){ echo 'bg-white/20 text-white font-semibold'; } else { echo "hover:bg-white/10 transition-colors"; } ?>" href="/admin/">
+			<a class="flex items-center space-x-3 px-4 py-3 rounded-lg <?php if($_SERVER['REQUEST_URI'] == '/admin/dashboard'){ echo 'bg-white/20 text-white font-semibold'; } else { echo "hover:bg-white/10 transition-colors"; } ?>" href="/admin/">
 			<span class="material-symbols-outlined">dashboard</span>
 					<span>Anasayfa</span>
 			</a>
-			<a class="flex items-center space-x-3 px-4 py-3 rounded-lg <?php if($_SERVER['REQUEST_URI'] == '/analytics'){ echo 'bg-white/20 text-white font-semibold'; } else { echo "hover:bg-white/10 transition-colors"; } ?>" href="/admin/analytics">
+			<a class="flex items-center space-x-3 px-4 py-3 rounded-lg <?php if($_SERVER['REQUEST_URI'] == '/admin/analytics'){ echo 'bg-white/20 text-white font-semibold'; } else { echo "hover:bg-white/10 transition-colors"; } ?>" href="/admin/analytics">
 			<span class="material-symbols-outlined">bar_chart</span>
 					<span>Analizler</span>
 			</a>
-			<a class="flex items-center space-x-3 px-4 py-3 rounded-lg <?php if($_SERVER['REQUEST_URI'] == '/users'){ echo 'bg-white/20 text-white font-semibold'; } else { echo "hover:bg-white/10 transition-colors"; } ?>" href="/admin/users">
+			<a class="flex items-center space-x-3 px-4 py-3 rounded-lg <?php if($_SERVER['REQUEST_URI'] == '/admin/users'){ echo 'bg-white/20 text-white font-semibold'; } else { echo "hover:bg-white/10 transition-colors"; } ?>" href="/admin/users">
 			<span class="material-symbols-outlined">group</span>
 					<span>Kullanıcılar</span>
 			</a>
-			<a class="flex items-center space-x-3 px-4 py-3 rounded-lg  <?php if($_SERVER['REQUEST_URI'] == '/dashboard'){ echo 'bg-white/20 text-white font-semibold'; } else { echo "hover:bg-white/10 transition-colors"; } ?>" href="/admin/orders">
+			<a class="flex items-center space-x-3 px-4 py-3 rounded-lg  <?php if($_SERVER['REQUEST_URI'] == '/admin/orders'){ echo 'bg-white/20 text-white font-semibold'; } else { echo "hover:bg-white/10 transition-colors"; } ?>" href="/admin/orders">
 			<span class="material-symbols-outlined">shopping_cart</span>
 					<span>Siparişler</span>
 			</a>
-			<a class="flex items-center space-x-3 px-4 py-3 rounded-lg  <?php if($_SERVER['REQUEST_URI'] == '/dashboard'){ echo 'bg-white/20 text-white font-semibold'; } else { echo "hover:bg-white/10 transition-colors"; } ?>" href="/admin/products">
+			<a class="flex items-center space-x-3 px-4 py-3 rounded-lg  <?php if($_SERVER['REQUEST_URI'] == '/admin/products'){ echo 'bg-white/20 text-white font-semibold'; } else { echo "hover:bg-white/10 transition-colors"; } ?>" href="/admin/products">
 			<span class="material-symbols-outlined">inventory_2</span>
 					<span>Ürünler</span>
 			</a>

@@ -72,9 +72,9 @@
 							</div>
 						</div>
 						<div class="widget glassmorphism p-6 sm:col-span-2 2xl:col-span-2">
-							<p class="text-lg font-semibold mb-4">Bölgelere Göre Satış</p>
+							<p class="text-lg font-semibold mb-4">Garsonlara Göre Sipariş</p>
 							<div class="h-64 sm:h-72 lg:h-80 flex justify-center items-center">
-								<canvas id="salesChart"></canvas>
+								<canvas id="waitersChart"></canvas>
 							</div>
 						</div>
 						<div class="widget glassmorphism p-6 col-span-1 sm:col-span-2 2xl:col-span-4">
@@ -174,7 +174,6 @@
       if (!res.ok) throw new Error('HTTP ' + res.status);
 
       const raw = await res.json();
-      // endpoint bazen `{"status":..,"message":..,"data": {...}}` şeklinde olabilir
       const d = raw?.data ?? raw;
 
       // Sayılar
@@ -187,8 +186,6 @@
       setDelta(revDeltaEl,   pct(d.monthlyRevenue, d.monthlyRevenue_prev), 'geçen aya göre');
       setDelta(orderDeltaEl, pct(d.monthlyOrders,  d.monthlyOrders_prev),  'geçen aya göre');
       setDelta(waitDeltaEl,  pct(d.waitersCount,   d.waitersCount_prev),   'geçen aya göre');
-
-      // Çalışan garsonlar: örnek DoD kıyas (ismini sen nasıl beslersen)
       setDelta(workingDeltaEl, pct(d.workingWaiters, d.workingWaiters_prev), 'düne göre');
     } catch (err) {
       console.error('Dashboard verisi çekilemedi:', err);
@@ -197,12 +194,13 @@
     }
   }
 
-  // ----------------- Revenue (Mon→Sun sabit) -----------------
+  // ----------------- Revenue (Pzt→Paz sabit) -----------------
   const WEEK_LABELS_TR = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
   const mondayIndex    = jsDay => (jsDay + 6) % 7; // JS: 0=Sun..6=Sat -> 0=Mon..6=Sun
 
   async function loadRevenueChart() {
     try {
+      // Not: backend route'un senin son haliyle 'getRevenueTimeseries'
       const res = await fetch('/api/v1/getRevenueTimeseries', {
         headers: { 'Accept': 'application/json' },
         cache: 'no-store'
@@ -228,8 +226,9 @@
 
       const ctx = document.getElementById('revenueChart')?.getContext('2d');
       if (!ctx) return;
+      if (window.__revenueChart) window.__revenueChart.destroy();
 
-      new Chart(ctx, {
+      window.__revenueChart = new Chart(ctx, {
         type: 'line',
         data: {
           labels: WEEK_LABELS_TR,
@@ -256,7 +255,7 @@
               backgroundColor: 'rgba(0,0,0,0.7)',
               displayColors: false,
               callbacks: {
-                title: items => items.map(it => it.label), // Pazartesi...
+                title: items => items.map(it => it.label),
                 label: ctx => `${fmtTRY(ctx.parsed.y)}${dateHint[ctx.dataIndex] ? ' (' + dateHint[ctx.dataIndex] + ')' : ''}`
               }
             }
@@ -279,12 +278,87 @@
     }
   }
 
+  // ----------------- Waiters Chart (garsonlara göre sipariş) -----------------
+  async function loadWaitersChart(days = 30, branchId = null, onlyPaid = 1) {
+  try {
+    const p = new URLSearchParams({ days: String(days), onlyPaid: String(onlyPaid) });
+    if (branchId !== null) p.set('branchId', String(branchId));
+
+    const res = await fetch('/api/v1/waiterOrders?' + p.toString(), {
+      headers: { 'Accept': 'application/json' }, cache: 'no-store'
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const raw     = await res.json();
+    const payload = raw?.data ?? raw;
+    const labels  = payload.labels ?? [];
+    const data    = (payload.data ?? []).map(Number);
+
+    const ctx = document.getElementById('waitersChart')?.getContext('2d');
+    if (!ctx) return;
+
+    // Önceki grafik varsa temizle
+    if (window.__waitersChart) window.__waitersChart.destroy();
+
+    window.__waitersChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Garson Sipariş Dağılımı',
+          data,
+          backgroundColor: [
+            'rgba(56, 189, 248, 0.7)',
+            'rgba(167, 139, 250, 0.7)',
+            'rgba(244, 114, 182, 0.7)',
+            'rgba(251, 191, 36, 0.7)',
+            'rgba(52, 211, 153, 0.7)',
+            'rgba(239, 68, 68, 0.7)',
+            'rgba(16, 185, 129, 0.7)'
+          ],
+          borderColor: 'rgba(255,255,255,0.9)',
+          borderWidth: 2,
+          hoverOffset: 12
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        cutout: '60%',       // ortadaki boşluk (opsiyonel)
+        rotation: -90,       // başlangıç açısı (opsiyonel)
+        plugins: {
+          legend: {
+            display: true,
+            position: 'right',
+            labels: { color: 'rgba(255,255,255,0.9)', padding: 12, font: { size: 13 } }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            callbacks: {
+              label: (ctx) => {
+                const lbl = ctx.chart.data.labels[ctx.dataIndex] || 'Bilinmiyor';
+                const val = ctx.parsed;
+                return `${lbl}: ${val} sipariş`;
+              }
+            }
+          }
+        },
+        // ÖNEMLİ: doughnut’ta eksen yok! scales boş olmalı
+        scales: {}
+      }
+    });
+  } catch (err) {
+    console.error('Garson doughnut grafiği yüklenemedi:', err);
+  }
+}
+
   // ----------------- Sales doughnut (dummy) -----------------
   function loadSalesChartDummy() {
     const ctx = document.getElementById('salesChart')?.getContext('2d');
     if (!ctx) return;
+    if (window.__salesChart) window.__salesChart.destroy();
 
-    new Chart(ctx, {
+    window.__salesChart = new Chart(ctx, {
       type: 'doughnut',
       data: {
         labels: ['North America', 'Europe', 'Asia', 'South America', 'Africa'],
@@ -334,11 +408,13 @@
       }
     });
   }
+  
 
   // ----------------- Boot -----------------
   document.addEventListener('DOMContentLoaded', () => {
     loadDashboard();
     loadRevenueChart();
+    loadWaitersChart(7, null, 1); // son 7 gün, tüm şubeler, kapanan siparişler
     loadSalesChartDummy();
   });
 </script>

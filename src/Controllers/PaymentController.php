@@ -329,5 +329,173 @@ public static function getRevenueTimeseries(?int $year = null, ?int $month = nul
     }
 }
 
+    public static function paymentMethods(?int $days = null, ?int $branchId = null): void
+{
+    try {
+        // Parametreler
+        $days     = max(1, (int)($_GET['days'] ?? ($days ?? 30)));
+        $branchId = isset($_GET['branchId']) ? (int)$_GET['branchId'] : $branchId;
+
+        // Tarih aralığı [start, end)
+        $end   = (new \DateTimeImmutable('tomorrow'))->setTime(0,0,0);
+        $start = $end->modify("-{$days} days");
+
+        $where = "status='completed' AND created_at >= ? AND created_at < ?";
+        $bind  = [$start->format('Y-m-d H:i:s'), $end->format('Y-m-d H:i:s')];
+
+        if ($branchId !== null) {
+            $where .= " AND branch_id = ?";
+            $bind[] = $branchId;
+        }
+
+        // Method bazında toplamlar
+        $rows = (new \App\Core\DB('payments'))->query(
+            "SELECT method, COALESCE(SUM(amount),0) AS total
+             FROM payments
+             WHERE $where
+             GROUP BY method
+             ORDER BY total DESC",
+            $bind,
+            'array'
+        );
+
+        // Toplam
+        $grand = 0.0;
+        foreach ($rows as $r) $grand += (float)$r['total'];
+
+        // Label eşlemesi (opsiyonel)
+        $labels = [
+            'card'   => 'Kredi Kartı',
+            'debit'  => 'Banka Kartı',
+            'cash'   => 'Nakit',
+            'qr'     => 'QR',
+            'meal'   => 'Yemek Kartı',
+            'mixed'  => 'Karışık',
+            'other'  => 'Diğer',
+        ];
+
+        $items = [];
+        foreach ($rows as $r) {
+            $code  = strtolower(trim($r['method'] ?? 'other'));
+            $name  = $labels[$code] ?? ucfirst($code);
+            $total = round((float)$r['total'], 2);
+            $pct   = $grand > 0 ? round($total * 100 / $grand, 2) : 0.0;
+
+            $items[] = [
+                'method' => $code,   // 'cash', 'card', ...
+                'label'  => $name,   // 'Cash', 'Credit Card', ...
+                'total'  => $total,  // TRY
+                'pct'    => $pct,
+            ];
+        }
+
+        echo \App\Utils\JsonKit::json([
+            'range'     => [$start->format('Y-m-d'), $end->modify('-1 day')->format('Y-m-d')],
+            'total'     => round($grand, 2),
+            'currency'  => 'TRY',
+            'items'     => $items,
+            'days'      => $days,
+            'branchId'  => $branchId,
+        ], 'Ödeme yöntemlerine göre dağılım', 200);
+
+    } catch (\Throwable $e) {
+        echo \App\Utils\JsonKit::fail('Hata: '.$e->getMessage(), 500);
+    }
+}
+
+public static function revenueByCategory(int $days = 30, ?int $branchId = null): void
+    {
+        try {
+            $start = (new \DateTimeImmutable('today'))->modify('-'.($days-1).' days')->setTime(0,0,0);
+            $end   = (new \DateTimeImmutable('tomorrow'))->setTime(0,0,0);
+
+            $where = "o.paid_at IS NOT NULL AND o.paid_at >= ? AND o.paid_at < ?";
+            $bind  = [$start->format('Y-m-d H:i:s'), $end->format('Y-m-d H:i:s')];
+
+            if ($branchId !== null) {
+                $where .= " AND o.branch_id = ?";
+                $bind[] = $branchId;
+            }
+
+            // Kategori adını almak için LEFT JOIN categories
+            $rows = (new DB('orders'))->query(
+                "SELECT 
+                    COALESCE(c.name, CONCAT('Kategori #', p.category_id)) AS label,
+                    p.category_id,
+                    COALESCE(SUM(oi.line_total),0) AS total
+                 FROM orders o
+                 JOIN order_items oi ON oi.order_id = o.id
+                 JOIN products p     ON p.id       = oi.product_id
+                 LEFT JOIN categories c ON c.id     = p.category_id
+                 WHERE $where
+                 GROUP BY p.category_id, c.name
+                 ORDER BY total DESC",
+                $bind,
+                'array'
+            );
+
+            $labels = [];
+            $data   = [];
+            $total  = 0.0;
+
+            foreach ($rows as $r) {
+                $labels[] = (string)$r['label'];
+                $val      = (float)$r['total'];
+                $data[]   = $val;
+                $total   += $val;
+            }
+
+            echo JsonKit::json([
+                'labels'   => $labels,
+                'data'     => $data,
+                'total'    => round($total, 2),
+                'currency' => 'TRY',
+                'range'    => [$start->format('Y-m-d'), $end->modify('-1 day')->format('Y-m-d')],
+                'days'     => $days,
+                'branchId' => $branchId,
+            ], 'Kategoriye göre ciro', 200);
+
+        } catch (\Throwable $e) {
+            echo JsonKit::fail('Hata: '.$e->getMessage(), 500);
+        }
+    }
+    // GET /api/v1/revenueByTable?days=30&branchId=1
+    public static function revenueByTable(): void
+    {
+        try {
+            $days     = (int)($_GET['days'] ?? 30);
+            $branchId = isset($_GET['branchId']) ? (int)$_GET['branchId'] : null;
+
+            $where = "paid_at IS NOT NULL AND paid_at >= NOW() - INTERVAL ? DAY";
+            $bind  = [$days];
+            if ($branchId) { $where .= " AND branch_id = ?"; $bind[] = $branchId; }
+
+            $rows = (new DB('orders'))->query(
+                "SELECT table_no, COALESCE(SUM(total_amount),0) AS total
+                 FROM orders
+                 WHERE $where
+                 GROUP BY table_no
+                 ORDER BY total DESC",
+                $bind,
+                'array'
+            );
+
+            $labels = array_map(fn($r) => (string)($r['table_no'] ?? '—'), $rows);
+            $data   = array_map(fn($r) => (float)$r['total'], $rows);
+            $sum    = array_sum($data);
+
+            echo JsonKit::json([
+                'labels' => $labels,
+                'data'   => $data,
+                'total'  => round($sum, 2),
+                'days'   => $days,
+                'branchId' => $branchId
+            ], 'Masaya göre ciro', 200);
+
+        } catch (\Throwable $e) {
+            echo JsonKit::fail('Hata: '.$e->getMessage(), 500);
+        }
+    }
+
 
 }

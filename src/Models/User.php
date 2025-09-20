@@ -40,8 +40,8 @@ class User
         return $user;
     }
 
-    public function all(){
-        $users = $this->db->get();
+    public static function all(){
+        $users = (new self())->db->get();
         foreach($users as &$user){
             unset($user['password_hash']);
         }
@@ -56,4 +56,21 @@ class User
         }
         return $user ?: null;
     }
+
+
+    public static function getRolesByUserId(int $userId): array {
+        $rolesSql = "
+            SELECT r.name
+            FROM roles r
+            INNER JOIN user_roles ur ON ur.role_id = r.id
+            WHERE ur.user_id = ?
+        ";
+        $roleRows = (new self)->db->query($rolesSql, [$userId], 'array');
+        return array_column($roleRows, 'name');
+    }
+    public static function getPrimaryRole(int $userId): ?string {
+        $roles = (new self())->getRolesByUserId($userId);
+        return $roles[0] ?? null;
+    }
+
 }

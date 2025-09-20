@@ -11,11 +11,7 @@ class Waiter {
     {
         $this->db = new DB('users');
     }
-
-    /**
-     * Sadece garson (role_id=3) kullanıcıları döndürür.
-     * İstersen branch filtresi verebilirsin.
-     */
+    
     public function all(?int $branchId = null): array
     {
         $q = (new DB('users'))->whereRaw('EXISTS (SELECT 1 FROM user_roles ur WHERE ur.user_id = users.id AND ur.role_id = ?)',[3]);

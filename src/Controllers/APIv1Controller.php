@@ -6,6 +6,7 @@ use App\Utils\JsonKit;
 use App\Models\User;
 use App\Controllers\OrdersController;
 use App\Controllers\WaitersController;
+use App\Core\DB;
 
 class APIv1Controller
 {
@@ -380,5 +381,135 @@ public static function getDashboardData(): void
 
     public function getRevenueTimeseries(){
         PaymentController::getRevenueTimeseries(null, null, $_SESSION['branch_id']);
+    }
+
+    public function waiterOrders(){
+        OrdersController::waiterOrders();
+    }
+
+    public function productBreakdown(){
+        ProductsController::productBreakdown();
+    }
+
+    public function paymentMethods(){
+        PaymentController::paymentMethods();
+    }
+
+    public function staffPerformance(){
+        OrdersController::staffPerformance();
+    }
+
+    public static function getKPIStats(): void
+    {
+        try {
+            // ---- Params
+            $days     = max(1, (int)($_GET['days'] ?? 30));
+            $branchId = isset($_GET['branchId']) ? (int)$_GET['branchId'] : null;
+
+            // ---- Ranges [start, end)
+            $end   = (new \DateTimeImmutable('tomorrow'))->setTime(0, 0, 0);
+            $start = $end->modify("-{$days} days");
+
+            $prevEnd   = $start;
+            $prevStart = $prevEnd->modify("-{$days} days");
+
+            // --- Helpers
+            $paymentsWhere = "status='completed' AND created_at >= ? AND created_at < ?";
+            $ordersWhere   = "paid_at IS NOT NULL AND paid_at >= ? AND paid_at < ?";
+
+            $payBind  = [$start->format('Y-m-d H:i:s'), $end->format('Y-m-d H:i:s')];
+            $ordBind  = $payBind;
+
+            $payPrev  = [$prevStart->format('Y-m-d H:i:s'), $prevEnd->format('Y-m-d H:i:s')];
+            $ordPrev  = $payPrev;
+
+            if ($branchId !== null) {
+                $paymentsWhere .= " AND branch_id = ?";
+                $ordersWhere   .= " AND branch_id = ?";
+
+                $payBind[] = $branchId;
+                $ordBind[] = $branchId;
+
+                $payPrev[] = $branchId;
+                $ordPrev[] = $branchId;
+            }
+
+            // ---- CURRENT
+            $revenue = (new DB('payments'))->query(
+                "SELECT COALESCE(SUM(amount),0) AS t FROM payments WHERE $paymentsWhere",
+                $payBind, 'array'
+            )[0]['t'] ?? 0;
+
+            $orders  = (new DB('orders'))->query(
+                "SELECT COUNT(*) AS c FROM orders WHERE $ordersWhere",
+                $ordBind, 'array'
+            )[0]['c'] ?? 0;
+
+            $revenue = round((float)$revenue, 2);
+            $orders  = (int)$orders;
+            $aov     = $orders > 0 ? round($revenue / $orders, 2) : 0.0;
+
+            // ---- PREVIOUS (delta için)
+            $revenuePrev = (new DB('payments'))->query(
+                "SELECT COALESCE(SUM(amount),0) AS t FROM payments WHERE $paymentsWhere",
+                $payPrev, 'array'
+            )[0]['t'] ?? 0;
+
+            $ordersPrev  = (new DB('orders'))->query(
+                "SELECT COUNT(*) AS c FROM orders WHERE $ordersWhere",
+                $ordPrev, 'array'
+            )[0]['c'] ?? 0;
+
+            $revenuePrev = round((float)$revenuePrev, 2);
+            $ordersPrev  = (int)$ordersPrev;
+            $aovPrev     = $ordersPrev > 0 ? round($revenuePrev / $ordersPrev, 2) : 0.0;
+
+            // ---- % Değişim
+            $pct = function ($cur, $prev) {
+                $cur = (float)$cur; $prev = (float)$prev;
+                if ($prev == 0) return $cur > 0 ? 100.0 : 0.0;
+                return round((($cur - $prev) / $prev) * 100, 1);
+            };
+
+            $resp = [
+                'range'      => [$start->format('Y-m-d'), $end->modify('-1 day')->format('Y-m-d')],
+                'prev_range' => [$prevStart->format('Y-m-d'), $prevEnd->modify('-1 day')->format('Y-m-d')],
+                'currency'   => 'TRY',
+                'totals'     => [
+                    'revenue' => $revenue,
+                    'orders'  => $orders,
+                    'avg_order_value' => $aov,
+                ],
+                'previous'   => [
+                    'revenue' => $revenuePrev,
+                    'orders'  => $ordersPrev,
+                    'avg_order_value' => $aovPrev,
+                ],
+                'deltas'     => [
+                    'revenue_pct' => $pct($revenue, $revenuePrev),
+                    'orders_pct'  => $pct($orders,   $ordersPrev),
+                    'avg_pct'     => $pct($aov,      $aovPrev),
+                ],
+                'days'       => $days,
+                'branchId'   => $branchId,
+            ];
+
+            echo JsonKit::json($resp, 'KPI stats', 200);
+
+        } catch (\Throwable $e) {
+            echo JsonKit::fail('Hata: '.$e->getMessage(), 500);
+        }
+    }
+
+    public function revenueByCategory(){
+        PaymentController::revenueByCategory();
+    }
+
+    public function revenueByTable(){
+        PaymentController::revenueByTable();
+    }
+
+    public function getAllUsers(){
+        echo JsonKit::json(User::all(), "Kullanıcılar getirildi");
     }
 }
