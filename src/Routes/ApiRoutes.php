@@ -21,7 +21,14 @@ class ApiRoutes
             $router->get('/revenueByCategory', [\App\Controllers\APIv1Controller::class, 'revenueByCategory']);
             $router->get('/revenueByTable', [\App\Controllers\APIv1Controller::class, 'revenueByTable']);
             $router->get('/getAllUsers', [\App\Controllers\APIv1Controller::class, 'getAllUsers']);
-            
+            $router->get('/printers', [\App\Controllers\PrinterController::class, 'index']);
+            $router->post('/printers/{printerId}/test', [\App\Controllers\PrinterController::class, 'testPrint']);
+            $router->get('/printers/template', [\App\Controllers\PrinterController::class, 'getTemplate']);
+            $router->post('/printers/template', [\App\Controllers\PrinterController::class, 'updateTemplate']);
+            $router->post('/printers/template/preview', [\App\Controllers\PrinterController::class, 'previewTemplate']);
+            $router->get('/getBusinessHours', [\App\Controllers\APIv1Controller::class, 'getBusinessHours']);
+            $router->get('/getBranchHolidays', [\App\Controllers\APIv1Controller::class, 'getBranchHolidays']);
+            $router->post('/saveSettings', [\App\Controllers\APIv1Controller::class, 'saveSettings']);
         });
 
         Router::group('/api/v1/handheld', function($router){

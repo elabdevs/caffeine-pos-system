@@ -20,9 +20,6 @@ final class JWT
             'iat' => $now,
             'exp' => $now + $ttl,
             'jti' => bin2hex(random_bytes(8)),
-            // 'iss' => 'https://your-app.example',
-            // 'aud' => 'your-audience',
-            // 'nbf' => $now,
         ];
         $payload = array_merge($defaults, $std, $claims);
 

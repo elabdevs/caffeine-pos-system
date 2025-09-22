@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Anamakine: 127.0.0.1
--- Üretim Zamanı: 18 Eyl 2025, 15:40:16
+-- Üretim Zamanı: 22 Eyl 2025, 16:20:35
 -- Sunucu sürümü: 10.4.32-MariaDB
 -- PHP Sürümü: 8.2.12
 
@@ -64,6 +64,62 @@ INSERT INTO `branches` (`id`, `name`, `address`, `phone`, `is_active`, `created_
 -- --------------------------------------------------------
 
 --
+-- Tablo için tablo yapısı `branch_holidays`
+--
+
+CREATE TABLE `branch_holidays` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `branch_id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(120) NOT NULL,
+  `holiday_date` date NOT NULL,
+  `annual_recurring` tinyint(1) NOT NULL DEFAULT 0,
+  `status` enum('closed','open_override') NOT NULL DEFAULT 'closed',
+  `open_time` time DEFAULT NULL,
+  `close_time` time DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `branch_holidays`
+--
+
+INSERT INTO `branch_holidays` (`id`, `branch_id`, `name`, `holiday_date`, `annual_recurring`, `status`, `open_time`, `close_time`, `created_at`) VALUES
+(1, 1, 'Ramazan Bayramı 1. Gün', '2024-12-25', 1, 'closed', NULL, NULL, '2025-09-22 09:51:23'),
+(2, 1, 'Ramazan Bayramı 2. Gün', '2025-01-01', 1, 'closed', NULL, NULL, '2025-09-22 09:51:23'),
+(3, 1, 'Ramazan Bayramı 3. Gün', '2025-03-31', 0, 'open_override', '10:00:00', '16:00:00', '2025-09-22 09:51:23');
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `business_hours`
+--
+
+CREATE TABLE `business_hours` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `branch_id` bigint(20) UNSIGNED NOT NULL,
+  `weekday` tinyint(3) UNSIGNED NOT NULL,
+  `open_time` time NOT NULL,
+  `close_time` time NOT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `business_hours`
+--
+
+INSERT INTO `business_hours` (`id`, `branch_id`, `weekday`, `open_time`, `close_time`, `enabled`, `created_at`) VALUES
+(1, 1, 1, '08:00:00', '20:00:00', 1, '2025-09-22 09:50:54'),
+(2, 1, 2, '08:00:00', '20:00:00', 1, '2025-09-22 09:50:54'),
+(3, 1, 3, '08:00:00', '20:00:00', 1, '2025-09-22 09:50:54'),
+(4, 1, 4, '08:00:00', '20:00:00', 1, '2025-09-22 09:50:54'),
+(5, 1, 5, '08:00:00', '22:00:00', 1, '2025-09-22 09:50:54'),
+(6, 1, 6, '09:00:00', '22:00:00', 1, '2025-09-22 09:50:54'),
+(7, 1, 7, '00:00:00', '00:00:00', 0, '2025-09-22 09:50:54');
+
+-- --------------------------------------------------------
+
+--
 -- Tablo için tablo yapısı `categories`
 --
 
@@ -82,6 +138,30 @@ INSERT INTO `categories` (`id`, `name`, `sort_order`, `is_active`) VALUES
 (1, 'Kahve', 1, 1),
 (2, 'Tatlı', 2, 1),
 (3, 'Sandviç', 3, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `category_station_rules`
+--
+
+CREATE TABLE `category_station_rules` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `branch_id` bigint(20) UNSIGNED NOT NULL,
+  `category_id` bigint(20) UNSIGNED NOT NULL,
+  `station_id` bigint(20) UNSIGNED NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `category_station_rules`
+--
+
+INSERT INTO `category_station_rules` (`id`, `branch_id`, `category_id`, `station_id`, `created_at`, `updated_at`) VALUES
+(2, 1, 1, 1, '2025-09-21 19:42:15', '2025-09-21 19:42:15'),
+(3, 1, 3, 2, '2025-09-21 19:42:15', '2025-09-21 19:42:15'),
+(4, 1, 2, 1, '2025-09-21 19:42:15', '2025-09-21 19:42:15');
 
 -- --------------------------------------------------------
 
@@ -159,7 +239,13 @@ CREATE TABLE `orders` (
 --
 
 INSERT INTO `orders` (`id`, `branch_id`, `user_id`, `table_no`, `total_amount`, `payment_method`, `status`, `created_at`, `paid_at`, `cancelled_at`, `refunded_at`, `note`) VALUES
-(17, 1, 1, 'T1', 95.00, 'cash', 'pending', '2025-09-18 14:46:49', '2025-09-18 14:46:58', NULL, NULL, NULL);
+(17, 1, 1, 'T1', 95.00, 'cash', 'pending', '2025-09-18 14:46:49', '2025-09-18 14:46:58', NULL, NULL, NULL),
+(18, 1, 2, 'T1', 410.00, '', 'pending', '2025-09-21 16:22:42', '2025-09-21 16:24:41', NULL, NULL, NULL),
+(19, 1, 2, 'T2', 370.00, 'card', 'pending', '2025-09-21 16:25:09', '2025-09-21 16:28:37', NULL, NULL, NULL),
+(20, 1, 2, 'T1', 210.00, '', 'pending', '2025-09-21 16:40:52', '2025-09-21 16:45:41', NULL, NULL, NULL),
+(21, 1, 1, 'T1', 95.00, 'cash', 'pending', '2025-09-21 16:49:52', '2025-09-22 10:44:10', NULL, NULL, NULL),
+(22, 1, 2, 'T2', 265.00, '', 'pending', '2025-09-21 17:45:57', '2025-09-21 17:46:45', NULL, NULL, NULL),
+(23, 1, 2, 'T2', 210.00, 'cash', 'pending', '2025-09-21 22:26:14', '2025-09-21 22:26:25', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -182,7 +268,24 @@ CREATE TABLE `order_items` (
 --
 
 INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_total`, `note`) VALUES
-(22, 17, 6, 1, 95.00, 95.00, '');
+(22, 17, 6, 1, 95.00, 95.00, ''),
+(23, 18, 1, 1, 90.00, 90.00, ''),
+(24, 18, 4, 1, 80.00, 80.00, ''),
+(25, 18, 6, 1, 95.00, 95.00, ''),
+(26, 18, 5, 1, 85.00, 85.00, ''),
+(27, 18, 3, 1, 60.00, 60.00, ''),
+(28, 19, 1, 1, 90.00, 90.00, ''),
+(29, 19, 6, 1, 95.00, 95.00, ''),
+(30, 19, 1, 1, 90.00, 90.00, ''),
+(31, 19, 6, 1, 95.00, 95.00, ''),
+(32, 20, 1, 1, 115.00, 115.00, ''),
+(33, 20, 6, 1, 95.00, 95.00, ''),
+(34, 21, 6, 1, 95.00, 95.00, ''),
+(35, 22, 6, 1, 95.00, 95.00, ''),
+(36, 22, 4, 1, 80.00, 80.00, ''),
+(37, 22, 1, 1, 90.00, 90.00, ''),
+(38, 23, 6, 1, 95.00, 95.00, ''),
+(39, 23, 1, 1, 115.00, 115.00, '');
 
 -- --------------------------------------------------------
 
@@ -209,7 +312,122 @@ CREATE TABLE `payments` (
 --
 
 INSERT INTO `payments` (`id`, `order_id`, `branch_id`, `table_no`, `method`, `amount`, `status`, `txn_ref`, `note`, `created_at`, `updated_at`) VALUES
-(11, 17, 1, 'T1', 'cash', 95.00, 'completed', '', '', '2025-09-18 11:46:58', '2025-09-18 11:46:58');
+(11, 17, 1, 'T1', 'cash', 95.00, 'completed', '', '', '2025-09-18 11:46:58', '2025-09-18 11:46:58'),
+(12, 18, 1, 'T1', 'cash', 205.00, 'completed', '', '', '2025-09-21 13:24:41', '2025-09-21 13:24:41'),
+(13, 18, 1, 'T1', 'card', 205.00, 'completed', '', '', '2025-09-21 13:24:41', '2025-09-21 13:24:41'),
+(14, 19, 1, 'T2', 'card', 370.00, 'completed', '', '', '2025-09-21 13:28:37', '2025-09-21 13:28:37'),
+(15, 20, 1, 'T1', 'cash', 50.00, 'completed', '', '', '2025-09-21 13:45:41', '2025-09-21 13:45:41'),
+(16, 20, 1, 'T1', 'card', 100.00, 'completed', '', '', '2025-09-21 13:45:41', '2025-09-21 13:45:41'),
+(17, 20, 1, 'T1', 'cash', 60.00, 'completed', '', '', '2025-09-21 13:45:41', '2025-09-21 13:45:41'),
+(18, 22, 1, 'T2', 'meal', 115.00, 'completed', '', '', '2025-09-21 14:46:45', '2025-09-21 14:46:45'),
+(19, 22, 1, 'T2', 'meal', 100.00, 'completed', '', '', '2025-09-21 14:46:45', '2025-09-21 14:46:45'),
+(20, 22, 1, 'T2', 'meal', 50.00, 'completed', '', '', '2025-09-21 14:46:45', '2025-09-21 14:46:45'),
+(21, 23, 1, 'T2', 'cash', 210.00, 'completed', '', '', '2025-09-21 19:26:25', '2025-09-21 19:26:25'),
+(22, 21, 1, 'T1', 'cash', 95.00, 'completed', '', '', '2025-09-22 07:44:10', '2025-09-22 07:44:10');
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `prep_stations`
+--
+
+CREATE TABLE `prep_stations` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `branch_id` bigint(20) UNSIGNED NOT NULL,
+  `code` varchar(32) NOT NULL,
+  `name` varchar(64) NOT NULL,
+  `is_default` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `prep_stations`
+--
+
+INSERT INTO `prep_stations` (`id`, `branch_id`, `code`, `name`, `is_default`, `created_at`, `updated_at`) VALUES
+(1, 1, 'bar', 'Bar', 0, '2025-09-21 19:35:31', '2025-09-21 19:35:31'),
+(2, 1, 'kitchen', 'Mutfak', 1, '2025-09-21 19:35:31', '2025-09-21 19:35:31');
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `printers`
+--
+
+CREATE TABLE `printers` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `branch_id` bigint(20) UNSIGNED NOT NULL,
+  `station_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `name` varchar(64) NOT NULL,
+  `connector` enum('network','dummy','cups') NOT NULL DEFAULT 'network',
+  `host` varchar(128) DEFAULT NULL,
+  `port` int(11) DEFAULT NULL,
+  `cut_after_job` tinyint(1) NOT NULL DEFAULT 1,
+  `is_enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `printers`
+--
+
+INSERT INTO `printers` (`id`, `branch_id`, `station_id`, `name`, `connector`, `host`, `port`, `cut_after_job`, `is_enabled`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, 'Bar Yazıcı', 'network', '127.0.0.1', 9100, 1, 1, '2025-09-21 19:35:31', '2025-09-21 19:35:31'),
+(2, 1, 2, 'Mutfak Yazıcı (Dummy)', 'dummy', NULL, NULL, 1, 1, '2025-09-21 19:35:31', '2025-09-21 19:35:31');
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `print_jobs`
+--
+
+CREATE TABLE `print_jobs` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `branch_id` bigint(20) UNSIGNED NOT NULL,
+  `order_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `order_item_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `station_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `printer_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `status` enum('queued','printed','failed') NOT NULL DEFAULT 'queued',
+  `connector` varchar(32) NOT NULL,
+  `host` varchar(128) DEFAULT NULL,
+  `port` int(11) DEFAULT NULL,
+  `bytes` int(11) NOT NULL DEFAULT 0,
+  `error` text DEFAULT NULL,
+  `payload_json` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`payload_json`)),
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `print_jobs`
+--
+
+INSERT INTO `print_jobs` (`id`, `branch_id`, `order_id`, `order_item_id`, `station_id`, `printer_id`, `status`, `connector`, `host`, `port`, `bytes`, `error`, `payload_json`, `created_at`, `updated_at`) VALUES
+(5, 1, NULL, NULL, 2, 2, 'printed', 'dummy', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\"}', '2025-09-21 21:18:06', '2025-09-21 20:18:07'),
+(6, 1, NULL, NULL, 2, 2, 'printed', 'dummy', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\"}', '2025-09-21 21:20:05', '2025-09-21 20:20:06'),
+(7, 1, NULL, NULL, 1, 1, 'printed', 'network', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\"}', '2025-09-21 21:20:07', '2025-09-21 20:20:07'),
+(8, 1, NULL, NULL, 1, 1, 'printed', 'network', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\"}', '2025-09-21 21:21:11', '2025-09-21 20:21:12'),
+(9, 1, NULL, NULL, 1, 1, 'printed', 'network', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\"}', '2025-09-21 21:21:21', '2025-09-21 20:21:23'),
+(10, 1, NULL, NULL, 1, 1, 'printed', 'network', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\"}', '2025-09-21 21:21:22', '2025-09-21 20:21:24'),
+(11, 1, NULL, NULL, 1, 1, 'printed', 'network', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\"}', '2025-09-21 21:21:22', '2025-09-21 20:21:24'),
+(12, 1, NULL, NULL, 1, 1, 'printed', 'network', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\"}', '2025-09-21 21:21:24', '2025-09-21 20:21:24'),
+(13, 1, NULL, NULL, 1, 1, 'printed', 'network', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\"}', '2025-09-21 21:21:24', '2025-09-21 20:21:24'),
+(14, 1, NULL, NULL, 1, 1, 'printed', 'network', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\"}', '2025-09-21 21:21:24', '2025-09-21 20:21:25'),
+(15, 1, NULL, NULL, 1, 1, 'printed', 'network', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\"}', '2025-09-21 21:21:24', '2025-09-21 20:21:25'),
+(16, 1, NULL, NULL, 1, 1, 'printed', 'network', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\"}', '2025-09-21 21:21:25', '2025-09-21 20:21:25'),
+(17, 1, NULL, NULL, 1, 1, 'printed', 'network', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\"}', '2025-09-21 21:21:25', '2025-09-21 20:21:25'),
+(18, 1, NULL, NULL, 1, 1, 'printed', 'network', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\"}', '2025-09-21 21:21:25', '2025-09-21 20:21:25'),
+(19, 1, NULL, NULL, 2, 2, 'printed', 'dummy', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\"}', '2025-09-21 21:21:29', '2025-09-21 20:21:30'),
+(20, 1, NULL, NULL, 2, 2, 'printed', 'dummy', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\"}', '2025-09-21 21:21:30', '2025-09-21 20:21:30'),
+(21, 1, NULL, NULL, 1, NULL, 'failed', 'network', '127.0.0.1', 9100, 0, 'Print payload missing or invalid.', NULL, '2025-09-21 23:01:08', '2025-09-21 22:01:08'),
+(22, 1, NULL, NULL, 1, NULL, 'failed', 'network', '127.0.0.1', 9100, 0, 'Print payload missing or invalid.', NULL, '2025-09-21 23:01:34', '2025-09-21 22:01:34'),
+(23, 1, NULL, NULL, 1, 1, 'printed', 'network', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\",\"meta\":{\"table\":\"TEST\",\"branch_id\":1,\"station_id\":1,\"station_name\":\"Bar\"}}', '2025-09-21 23:04:26', '2025-09-21 22:04:27'),
+(24, 1, NULL, NULL, 1, 1, 'queued', 'network', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\",\"meta\":{\"table\":\"TEST\",\"branch_id\":1,\"station_id\":1,\"station_name\":\"Bar\"}}', '2025-09-22 11:21:37', '2025-09-22 11:21:37'),
+(25, 1, NULL, NULL, 1, 1, 'queued', 'network', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\",\"meta\":{\"table\":\"TEST\",\"branch_id\":1,\"station_id\":1,\"station_name\":\"Bar\"}}', '2025-09-22 13:30:04', '2025-09-22 13:30:04'),
+(26, 1, NULL, NULL, 2, 2, 'queued', 'dummy', '127.0.0.1', 9100, 0, NULL, '{\"title\":\"CAFFEINE\",\"table\":\"TEST\",\"items\":[{\"name\":\"Test Icecek\",\"qty\":1,\"note\":\"Demo fis\"},{\"name\":\"Test Tatli\",\"qty\":1,\"note\":\"\"}],\"footer\":\"Afiyet olsun\",\"meta\":{\"table\":\"TEST\",\"branch_id\":1,\"station_id\":2,\"station_name\":\"Mutfak\"}}', '2025-09-22 13:30:08', '2025-09-22 13:30:08');
 
 -- --------------------------------------------------------
 
@@ -323,6 +541,33 @@ INSERT INTO `product_option_values` (`id`, `option_id`, `label`, `price_delta`, 
 -- --------------------------------------------------------
 
 --
+-- Tablo için tablo yapısı `product_station_overrides`
+--
+
+CREATE TABLE `product_station_overrides` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `branch_id` bigint(20) UNSIGNED NOT NULL,
+  `product_id` bigint(20) UNSIGNED NOT NULL,
+  `station_id` bigint(20) UNSIGNED NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `product_station_overrides`
+--
+
+INSERT INTO `product_station_overrides` (`id`, `branch_id`, `product_id`, `station_id`, `created_at`, `updated_at`) VALUES
+(1, 1, 3, 1, '2025-09-21 19:43:53', '2025-09-21 19:43:53'),
+(2, 1, 4, 1, '2025-09-21 19:43:53', '2025-09-21 19:43:53'),
+(3, 1, 2, 1, '2025-09-21 19:43:53', '2025-09-21 19:43:53'),
+(4, 1, 1, 1, '2025-09-21 19:43:53', '2025-09-21 19:43:53'),
+(5, 1, 6, 2, '2025-09-21 19:43:53', '2025-09-21 19:43:53'),
+(6, 1, 5, 1, '2025-09-21 19:43:53', '2025-09-21 19:43:53');
+
+-- --------------------------------------------------------
+
+--
 -- Tablo için tablo yapısı `roles`
 --
 
@@ -371,19 +616,16 @@ INSERT INTO `sections` (`id`, `branch_id`, `name`, `sort_order`, `created_at`, `
 
 CREATE TABLE `settings` (
   `id` bigint(20) UNSIGNED NOT NULL,
-  `skey` varchar(120) NOT NULL,
-  `svalue` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`svalue`))
+  `branch_id` bigint(20) UNSIGNED NOT NULL,
+  `settings` longtext DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Tablo döküm verisi `settings`
 --
 
-INSERT INTO `settings` (`id`, `skey`, `svalue`) VALUES
-(1, 'currency', '\"TRY\"'),
-(2, 'tax_rate', '\"0.08\"'),
-(3, 'service_charge', '\"0.10\"'),
-(4, 'language', '\"tr\"');
+INSERT INTO `settings` (`id`, `branch_id`, `settings`) VALUES
+(8, 1, '{\"cafe\":{\"name\":\"The Cozy Bean\",\"address\":\"123 Coffee Lane, Brewville\",\"phone\":\"+1 (555) 123-4567\"},\"financials\":{\"currency\":\"USD ($)\",\"tax_rate\":8.5,\"service_fee\":10},\"localization\":{\"language\":\"English\"}}');
 
 -- --------------------------------------------------------
 
@@ -433,8 +675,8 @@ CREATE TABLE `tables` (
 --
 
 INSERT INTO `tables` (`id`, `branch_id`, `section_id`, `code`, `label`, `capacity`, `status`, `pos_x`, `pos_y`, `notes`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 1, 2, 'T1', 'Masa 1', 4, 'cleaning', NULL, NULL, NULL, '2025-09-17 12:28:48', '2025-09-18 11:46:58', NULL),
-(2, 1, 2, 'T2', 'Masa 2', 4, 'available', NULL, NULL, NULL, '2025-09-17 12:28:48', '2025-09-18 10:10:38', NULL),
+(1, 1, 2, 'T1', 'Masa 1', 4, 'available', NULL, NULL, NULL, '2025-09-17 12:28:48', '2025-09-22 07:44:12', NULL),
+(2, 1, 2, 'T2', 'Masa 2', 4, 'available', NULL, NULL, NULL, '2025-09-17 12:28:48', '2025-09-21 19:26:28', NULL),
 (3, 1, 2, 'T3', 'Masa 3', 4, 'available', NULL, NULL, NULL, '2025-09-17 12:28:48', '2025-09-18 08:27:53', NULL),
 (4, 1, 2, 'T4', 'Masa 4', 4, 'available', NULL, NULL, NULL, '2025-09-17 12:28:48', '2025-09-17 12:28:48', NULL),
 (5, 1, 2, 'T5', 'Masa 5', 4, 'available', NULL, NULL, NULL, '2025-09-17 12:28:48', '2025-09-17 12:28:48', NULL),
@@ -479,9 +721,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `branch_id`, `username`, `name`, `email`, `password_hash`, `status`, `last_login_at`, `created_at`, `updated_at`, `session_version`) VALUES
-(1, 1, 'reality1111', 'Admin User', 'admin@cafe.com', 'JGFyZ29uMmlkJHY9MTkkbT02NTUzNix0PTQscD0xJFUySkZZMWcwYW1KV1NqTklWVlE0Y2ckUzNNc2lVRHhDY3VGb2hrcGlaWmFCL2NGcXZrYlBRdThCVG55K0p4dTUxcw==', 'active', NULL, '2025-09-16 06:05:30', '2025-09-17 12:19:40', '12'),
-(2, 1, 'garson', 'Test Garsonu', 'garson@cafe.com', '$2y$10$04W367PTKNz7HehaPvHZluHSwfdzjGQQlNKPFSL4fG.ANqHoZDtxO', 'active', NULL, '2025-09-16 06:05:30', '2025-09-17 12:12:31', '1'),
-(3, 2, '0', 'Garson Ayşe', 'ayse@cafe.com', '$2y$10$abc...hash...', 'active', NULL, '2025-09-16 06:05:30', '2025-09-16 06:05:30', '1');
+(1, 1, 'reality1111', 'Efe Özdemir', 'info@elabdevs.com', 'JGFyZ29uMmlkJHY9MTkkbT02NTUzNix0PTQscD0xJFUySkZZMWcwYW1KV1NqTklWVlE0Y2ckUzNNc2lVRHhDY3VGb2hrcGlaWmFCL2NGcXZrYlBRdThCVG55K0p4dTUxcw==', 'active', NULL, '2025-09-16 06:05:30', '2025-09-21 13:34:33', '2'),
+(2, 1, 'garson', 'Test Garsonu', 'test@caffeine.com', '$2y$10$04W367PTKNz7HehaPvHZluHSwfdzjGQQlNKPFSL4fG.ANqHoZDtxO', 'active', NULL, '2025-09-16 06:05:30', '2025-09-21 13:21:38', '1');
 
 -- --------------------------------------------------------
 
@@ -500,8 +741,7 @@ CREATE TABLE `user_roles` (
 
 INSERT INTO `user_roles` (`user_id`, `role_id`) VALUES
 (1, 1),
-(2, 2),
-(3, 3);
+(2, 3);
 
 -- --------------------------------------------------------
 
@@ -546,12 +786,35 @@ ALTER TABLE `branches`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Tablo için indeksler `branch_holidays`
+--
+ALTER TABLE `branch_holidays`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_branch_date` (`branch_id`,`holiday_date`);
+
+--
+-- Tablo için indeksler `business_hours`
+--
+ALTER TABLE `business_hours`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_branch_day_slot` (`branch_id`,`weekday`,`open_time`,`close_time`);
+
+--
 -- Tablo için indeksler `categories`
 --
 ALTER TABLE `categories`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uk_categories_name` (`name`),
   ADD KEY `idx_categories_active` (`is_active`,`sort_order`);
+
+--
+-- Tablo için indeksler `category_station_rules`
+--
+ALTER TABLE `category_station_rules`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_branch_category` (`branch_id`,`category_id`),
+  ADD KEY `fk_catrule_category` (`category_id`),
+  ADD KEY `fk_catrule_station` (`station_id`);
 
 --
 -- Tablo için indeksler `ingredients`
@@ -598,6 +861,32 @@ ALTER TABLE `payments`
   ADD KEY `fk_branch_id` (`branch_id`);
 
 --
+-- Tablo için indeksler `prep_stations`
+--
+ALTER TABLE `prep_stations`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_station_branch_code` (`branch_id`,`code`);
+
+--
+-- Tablo için indeksler `printers`
+--
+ALTER TABLE `printers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_printers_branch` (`branch_id`),
+  ADD KEY `idx_printers_station` (`station_id`);
+
+--
+-- Tablo için indeksler `print_jobs`
+--
+ALTER TABLE `print_jobs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_print_jobs_branch_status` (`branch_id`,`status`),
+  ADD KEY `idx_print_jobs_order` (`order_id`),
+  ADD KEY `fk_pj_order_item` (`order_item_id`),
+  ADD KEY `fk_pj_station` (`station_id`),
+  ADD KEY `fk_pj_printer` (`printer_id`);
+
+--
 -- Tablo için indeksler `products`
 --
 ALTER TABLE `products`
@@ -630,6 +919,15 @@ ALTER TABLE `product_option_values`
   ADD KEY `option_id` (`option_id`);
 
 --
+-- Tablo için indeksler `product_station_overrides`
+--
+ALTER TABLE `product_station_overrides`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_branch_product` (`branch_id`,`product_id`),
+  ADD KEY `fk_prodover_product` (`product_id`),
+  ADD KEY `fk_prodover_station` (`station_id`);
+
+--
 -- Tablo için indeksler `roles`
 --
 ALTER TABLE `roles`
@@ -648,7 +946,7 @@ ALTER TABLE `sections`
 --
 ALTER TABLE `settings`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uk_settings_skey` (`skey`);
+  ADD UNIQUE KEY `fk_branch_id` (`branch_id`);
 
 --
 -- Tablo için indeksler `suppliers`
@@ -699,10 +997,28 @@ ALTER TABLE `branches`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- Tablo için AUTO_INCREMENT değeri `branch_holidays`
+--
+ALTER TABLE `branch_holidays`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- Tablo için AUTO_INCREMENT değeri `business_hours`
+--
+ALTER TABLE `business_hours`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
 -- Tablo için AUTO_INCREMENT değeri `categories`
 --
 ALTER TABLE `categories`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- Tablo için AUTO_INCREMENT değeri `category_station_rules`
+--
+ALTER TABLE `category_station_rules`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `ingredients`
@@ -720,19 +1036,37 @@ ALTER TABLE `notifications`
 -- Tablo için AUTO_INCREMENT değeri `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+
+--
+-- Tablo için AUTO_INCREMENT değeri `prep_stations`
+--
+ALTER TABLE `prep_stations`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- Tablo için AUTO_INCREMENT değeri `printers`
+--
+ALTER TABLE `printers`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- Tablo için AUTO_INCREMENT değeri `print_jobs`
+--
+ALTER TABLE `print_jobs`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `products`
@@ -759,6 +1093,12 @@ ALTER TABLE `product_option_values`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- Tablo için AUTO_INCREMENT değeri `product_station_overrides`
+--
+ALTER TABLE `product_station_overrides`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
 -- Tablo için AUTO_INCREMENT değeri `roles`
 --
 ALTER TABLE `roles`
@@ -774,7 +1114,7 @@ ALTER TABLE `sections`
 -- Tablo için AUTO_INCREMENT değeri `settings`
 --
 ALTER TABLE `settings`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `suppliers`
@@ -803,6 +1143,26 @@ ALTER TABLE `users`
 --
 ALTER TABLE `audit_logs`
   ADD CONSTRAINT `fk_audit_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Tablo kısıtlamaları `branch_holidays`
+--
+ALTER TABLE `branch_holidays`
+  ADD CONSTRAINT `fk_holidays_branch` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Tablo kısıtlamaları `business_hours`
+--
+ALTER TABLE `business_hours`
+  ADD CONSTRAINT `fk_bh_branch` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Tablo kısıtlamaları `category_station_rules`
+--
+ALTER TABLE `category_station_rules`
+  ADD CONSTRAINT `fk_catrule_branch` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_catrule_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_catrule_station` FOREIGN KEY (`station_id`) REFERENCES `prep_stations` (`id`) ON UPDATE CASCADE;
 
 --
 -- Tablo kısıtlamaları `ingredients`
@@ -838,6 +1198,29 @@ ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
+-- Tablo kısıtlamaları `prep_stations`
+--
+ALTER TABLE `prep_stations`
+  ADD CONSTRAINT `fk_station_branch` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Tablo kısıtlamaları `printers`
+--
+ALTER TABLE `printers`
+  ADD CONSTRAINT `fk_printer_branch` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_printer_station` FOREIGN KEY (`station_id`) REFERENCES `prep_stations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Tablo kısıtlamaları `print_jobs`
+--
+ALTER TABLE `print_jobs`
+  ADD CONSTRAINT `fk_pj_branch` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_pj_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_pj_order_item` FOREIGN KEY (`order_item_id`) REFERENCES `order_items` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_pj_printer` FOREIGN KEY (`printer_id`) REFERENCES `printers` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_pj_station` FOREIGN KEY (`station_id`) REFERENCES `prep_stations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
 -- Tablo kısıtlamaları `products`
 --
 ALTER TABLE `products`
@@ -861,6 +1244,14 @@ ALTER TABLE `product_options`
 --
 ALTER TABLE `product_option_values`
   ADD CONSTRAINT `product_option_values_ibfk_1` FOREIGN KEY (`option_id`) REFERENCES `product_options` (`id`) ON DELETE CASCADE;
+
+--
+-- Tablo kısıtlamaları `product_station_overrides`
+--
+ALTER TABLE `product_station_overrides`
+  ADD CONSTRAINT `fk_prodover_branch` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_prodover_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_prodover_station` FOREIGN KEY (`station_id`) REFERENCES `prep_stations` (`id`) ON UPDATE CASCADE;
 
 --
 -- Tablo kısıtlamaları `sections`

@@ -1,3 +1,15 @@
+<?php
+$adminPages = [
+    "/admin/general",
+    "/admin/hardware",
+    "/admin/payments",
+    "/admin/inventory",
+    "/admin/notifications",
+    "/admin/products",
+    "/admin/reports",
+    "/admin/security",
+];
+?>
 <aside class="sidebar w-full xl:w-64 p-6 flex flex-col justify-between shrink-0">
 	<div>
 		<div class="flex items-center justify-between xl:justify-start space-x-3 mb-6 xl:mb-10">
@@ -31,7 +43,15 @@
 					<span>Ürünler</span>
 			</a>
 			<div>
-			<button class="dropdown-toggle flex items-center justify-between space-x-4 p-3 rounded-lg bg-white/10 text-white shadow-lg w-full" title="Settings">
+			<button class="dropdown-toggle flex items-center justify-between space-x-4 p-3 rounded-lg <?php if(in_array($_SERVER['REQUEST_URI'], $adminPages)){ echo "bg-white/10 text-white shadow-lg"; } else { echo "hover:bg-white/10 transition-colors"; } ?> w-full" 
+			<?php
+
+
+			if (in_array($_SERVER['REQUEST_URI'], $adminPages)) {
+			    echo 'data-open="true"';
+			}
+			?>
+			title="Settings">
 			<div class="flex items-center space-x-4">
 			<span class="material-symbols-outlined">settings</span>
 					<span class="font-medium">Ayarlar</span>
@@ -39,15 +59,14 @@
 			<span class="material-symbols-outlined transition-transform">expand_more</span>
 			</button>
 			<div class="dropdown-content ml-4 mt-2 space-y-1">
-				<a class="block p-2 pl-8 rounded-lg text-sm text-white/60 hover:bg-white/5 hover:text-white transition-colors" href="#">Genel</a>
-				<a class="block p-2 pl-8 rounded-lg text-sm text-white/60 hover:bg-white/5 hover:text-white transition-colors" href="#">Kullanıcılar &amp; Roller</a>
-				<a class="block p-2 pl-8 rounded-lg text-sm bg-white/10 text-white font-semibold transition-colors" href="#">Disk</a>
-				<a class="block p-2 pl-8 rounded-lg text-sm text-white/60 hover:bg-white/5 hover:text-white transition-colors" href="#">Ödemeler</a>
-				<a class="block p-2 pl-8 rounded-lg text-sm text-white/60 hover:bg-white/5 hover:text-white transition-colors" href="#">Envanter</a>
-				<a class="block p-2 pl-8 rounded-lg text-sm text-white/60 hover:bg-white/5 hover:text-white transition-colors" href="#">Bildirimler</a>
-				<a class="block p-2 pl-8 rounded-lg text-sm text-white/60 hover:bg-white/5 hover:text-white transition-colors" href="#">Ürünler</a>
-				<a class="block p-2 pl-8 rounded-lg text-sm text-white/60 hover:bg-white/5 hover:text-white transition-colors" href="#">Raporlar</a>
-				<a class="block p-2 pl-8 rounded-lg text-sm text-white/60 hover:bg-white/5 hover:text-white transition-colors" href="#">Güvenlik</a>
+				<a class="block p-2 pl-8 rounded-lg text-sm <?php if($_SERVER['REQUEST_URI'] == '/admin/general'){ echo 'bg-white/10 text-white font-semibold transition-colors'; } else { echo "text-white/60 hover:bg-white/5 hover:text-white"; } ?> transition-colors" href="/admin/general">Genel</a>
+				<a class="block p-2 pl-8 rounded-lg text-sm <?php if($_SERVER['REQUEST_URI'] == '/admin/hardware'){ echo 'bg-white/10 text-white font-semibold transition-colors'; } else { echo "text-white/60 hover:bg-white/5 hover:text-white"; } ?> transition-colors" href="/admin/hardware">Donanım</a>
+				<a class="block p-2 pl-8 rounded-lg text-sm <?php if($_SERVER['REQUEST_URI'] == '/admin/payments'){ echo 'bg-white/10 text-white font-semibold transition-colors'; } else { echo "text-white/60 hover:bg-white/5 hover:text-white"; } ?> transition-colors" href="/admin/payments">Ödemeler</a>
+				<a class="block p-2 pl-8 rounded-lg text-sm <?php if($_SERVER['REQUEST_URI'] == '/admin/inventory'){ echo 'bg-white/10 text-white font-semibold transition-colors'; } else { echo "text-white/60 hover:bg-white/5 hover:text-white"; } ?> transition-colors" href="/admin/inventory">Envanter</a>
+				<a class="block p-2 pl-8 rounded-lg text-sm <?php if($_SERVER['REQUEST_URI'] == '/admin/notifications'){ echo 'bg-white/10 text-white font-semibold transition-colors'; } else { echo "text-white/60 hover:bg-white/5 hover:text-white"; } ?> transition-colors" href="/admin/notifications">Bildirimler</a>
+				<a class="block p-2 pl-8 rounded-lg text-sm <?php if($_SERVER['REQUEST_URI'] == '/admin/products'){ echo 'bg-white/10 text-white font-semibold transition-colors'; } else { echo "text-white/60 hover:bg-white/5 hover:text-white"; } ?> transition-colors" href="/admin/products">Ürünler</a>
+				<a class="block p-2 pl-8 rounded-lg text-sm <?php if($_SERVER['REQUEST_URI'] == '/admin/reports'){ echo 'bg-white/10 text-white font-semibold transition-colors'; } else { echo "text-white/60 hover:bg-white/5 hover:text-white"; } ?> transition-colors" href="/admin/reports">Raporlar</a>
+				<a class="block p-2 pl-8 rounded-lg text-sm <?php if($_SERVER['REQUEST_URI'] == '/admin/security'){ echo 'bg-white/10 text-white font-semibold transition-colors'; } else { echo "text-white/60 hover:bg-white/5 hover:text-white"; } ?> transition-colors" href="/admin/security">Güvenlik</a>
 			</div>
 			</div>
 		</nav>

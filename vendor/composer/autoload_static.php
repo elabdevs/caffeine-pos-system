@@ -11,6 +11,10 @@ class ComposerStaticInit0c9cd3daf41fe77338f7470c2cd4c901
     );
 
     public static $prefixLengthsPsr4 = array (
+        'M' => 
+        array (
+            'Mike42\\' => 7,
+        ),
         'A' => 
         array (
             'App\\' => 4,
@@ -18,6 +22,11 @@ class ComposerStaticInit0c9cd3daf41fe77338f7470c2cd4c901
     );
 
     public static $prefixDirsPsr4 = array (
+        'Mike42\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mike42/escpos-php/src/Mike42',
+            1 => __DIR__ . '/..' . '/mike42/gfx-php/src/Mike42',
+        ),
         'App\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
