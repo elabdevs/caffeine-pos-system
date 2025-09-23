@@ -7,7 +7,7 @@ use RuntimeException;
 
 class TicketTemplate
 {
-    private const SETTING_KEY = 'print_ticket_template';
+    private const TABLE = 'print_ticket_template';
 
     private static array $default = [
         'version'         => 1,
@@ -27,40 +27,62 @@ class TicketTemplate
         return self::$default;
     }
 
-    public static function getTemplate(): array
+    /**
+     * Şube bazlı şablon getirir; yoksa default döner.
+     */
+    public static function getTemplate(int $branch_id): array
     {
-        $row = DB::table('settings')->where('skey', self::SETTING_KEY)->first();
-        if (!$row || empty($row['svalue'])) {
+        if ($branch_id <= 0) {
             return self::$default;
         }
 
-        $decoded = json_decode((string) $row['svalue'], true);
-        if (!is_array($decoded)) {
+        $row = DB::table(self::TABLE)->where('branch_id', $branch_id)->first();
+        if (!$row) {
             return self::$default;
         }
 
-        return self::mergeWithDefault($decoded);
+        return self::rowToTemplate($row);
     }
 
-    public static function saveTemplate(array $input): array
+    /**
+     * Şablonu normalize edip şube bazlı upsert eder ve normalized değerleri döner.
+     */
+    public static function saveTemplate(array $input, int $branch_id): array
     {
-        $normalized = self::mergeWithDefault($input);
-        $encoded = json_encode($normalized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if ($encoded === false) {
-            throw new RuntimeException('Sablon kaydedilemedi.');
+        if ($branch_id <= 0) {
+            throw new RuntimeException('Geçersiz şube.');
         }
 
-        $settings = DB::table('settings');
-        $existing = $settings->where('skey', self::SETTING_KEY)->first();
+        $normalized = self::mergeWithDefault($input);
+
+        // JSON alanları encode et
+        $headerJson = json_encode($normalized['header_lines'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $footerJson = json_encode($normalized['footer_lines'] ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($headerJson === false || $footerJson === false) {
+            throw new RuntimeException('JSON alanları encode edilemedi.');
+        }
+
+        $table = DB::table(self::TABLE);
+        $existing = $table->where('branch_id', $branch_id)->first();
+
+        $payload = [
+            'branch_id'       => $branch_id,
+            'version'         => (int) ($normalized['version'] ?? 1),
+            'line_width'      => (int) ($normalized['line_width'] ?? 32),
+            'title'           => (string) ($normalized['title'] ?? ''),
+            'uppercase_title' => (int) (!empty($normalized['uppercase_title'])),
+            'header_lines'    => $headerJson,
+            'show_table'      => (int) (!empty($normalized['show_table'])),
+            'table_label'     => (string) ($normalized['table_label'] ?? 'Masa'),
+            'item_format'     => (string) ($normalized['item_format'] ?? '{qty} x {name}'),
+            'note_format'     => (string) ($normalized['note_format'] ?? '  Not: {note}'),
+            'footer_lines'    => $footerJson,
+        ];
+
         if ($existing) {
-            DB::table('settings')
-                ->where('id', (int) $existing['id'])
-                ->update(['svalue' => $encoded]);
+            $table->where('branch_id', $branch_id)->update($payload);
         } else {
-            DB::table('settings')->insert([
-                'skey'   => self::SETTING_KEY,
-                'svalue' => $encoded,
-            ]);
+            $table->insert($payload);
         }
 
         return $normalized;
@@ -88,6 +110,37 @@ class TicketTemplate
         return self::buildPreviewLines($template, $items, $meta, $lineWidth);
     }
 
+    /**
+     * DB satırını uygulama içi template array'ine çevirir.
+     */
+    private static function rowToTemplate(array $row): array
+    {
+        // DB tarafı -> PHP array (JSON decode + default merge)
+        $input = [
+            'version'         => isset($row['version']) ? (int)$row['version'] : null,
+            'line_width'      => isset($row['line_width']) ? (int)$row['line_width'] : null,
+            'title'           => $row['title'] ?? null,
+            'uppercase_title' => !empty($row['uppercase_title']),
+            'header_lines'    => self::safeJsonToArray($row['header_lines'] ?? '[]'),
+            'show_table'      => !empty($row['show_table']),
+            'table_label'     => $row['table_label'] ?? null,
+            'item_format'     => $row['item_format'] ?? null,
+            'note_format'     => $row['note_format'] ?? null,
+            'footer_lines'    => self::safeJsonToArray($row['footer_lines'] ?? '[]'),
+        ];
+
+        return self::mergeWithDefault($input);
+    }
+
+    private static function safeJsonToArray($json): array
+    {
+        if (!is_string($json) || $json === '') {
+            return [];
+        }
+        $decoded = json_decode($json, true);
+        return is_array($decoded) ? $decoded : [];
+    }
+
     private static function mergeWithDefault(array $input): array
     {
         $template = self::$default;
@@ -101,6 +154,11 @@ class TicketTemplate
         $template['note_format'] = self::sanitizeFormat($input['note_format'] ?? $template['note_format'], '  Not: {note}', allowEmpty: true);
         $template['footer_lines'] = self::toStringArray($input['footer_lines'] ?? $template['footer_lines']);
         $template['line_width'] = self::sanitizeLineWidth($input['line_width'] ?? $template['line_width']);
+
+        // version opsiyonel ama istersen dışarıdan geleni de al
+        if (isset($input['version']) && is_numeric($input['version'])) {
+            $template['version'] = (int) $input['version'];
+        }
 
         return $template;
     }

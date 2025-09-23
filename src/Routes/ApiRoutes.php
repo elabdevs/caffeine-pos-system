@@ -29,6 +29,7 @@ class ApiRoutes
             $router->get('/getBusinessHours', [\App\Controllers\APIv1Controller::class, 'getBusinessHours']);
             $router->get('/getBranchHolidays', [\App\Controllers\APIv1Controller::class, 'getBranchHolidays']);
             $router->post('/saveSettings', [\App\Controllers\APIv1Controller::class, 'saveSettings']);
+            $router->post('/payment-methods/save', [\App\Controllers\PaymentController::class, 'savePaymentMethods']);
         });
 
         Router::group('/api/v1/handheld', function($router){

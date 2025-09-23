@@ -116,7 +116,7 @@ class PrinterController
     public function getTemplate(): void
     {
         try {
-            $template = TicketTemplate::getTemplate();
+            $template = TicketTemplate::getTemplate($_SESSION['branch_id']);
             JsonKit::json(
                 [
                     "template" => $template,
@@ -140,7 +140,7 @@ class PrinterController
         }
 
         try {
-            $template = TicketTemplate::saveTemplate($input);
+            $template = TicketTemplate::saveTemplate($input, $_SESSION['branch_id']);
             JsonKit::json(
                 [
                     "template" => $template,

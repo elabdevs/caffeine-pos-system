@@ -42,8 +42,8 @@ class SettingsController{
         ]);
         
         $settingsSave = (new self())->settings->save($settingsData, $branch_id);
-        $businessHoursSave = (new self())->businessHours->save($businessHoursData, $branch_id);
-        var_dump($settingsSave, $businessHoursSave);
+        // $businessHoursSave = (new self())->businessHours->save($businessHoursData, $branch_id);
+        var_dump($settingsSave);
         // $holidaysSave = (new self())->holidays->save($settingsData, $branch_id);
         
     }

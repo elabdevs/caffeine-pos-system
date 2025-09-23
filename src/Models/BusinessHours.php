@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Core\DB;
+use Exception;
 
 class BusinessHours{
     protected $db;
@@ -17,6 +18,19 @@ class BusinessHours{
     }
 
     public static function save($data, $branch_id){
-        return (new self())->db->where("branch_id", $branch_id)->update($data);
+        if(is_array($data)){
+            try {
+                foreach($data as $value){
+                    (new self())->db->where("branch_id", $branch_id)->where("weekday", $value['weekday'])->update([
+                        'open_time' => $value['open_time'],
+                        'close_time' => $value['close_time'],
+                        'enabled' => $value['enabled']
+                    ]);
+                }
+                return true;
+            } catch (Exception $e) {
+                throw new Exception("Error Processing Request: ".$e, 1);
+            }
+        }
     }
 }

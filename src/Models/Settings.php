@@ -12,23 +12,22 @@ class Settings{
         $this->db = new DB("settings");
     }
 
-public static function save($data, $branch_id){
-    $jsonSettings = is_array($data) ? json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) : $data;
+    public static function save($data, $branch_id){
+        $jsonSettings = is_array($data) ? json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) : $data;
 
-    $db = new self();
+        $db = new self();
 
-    if(!$db->db->where("branch_id", $branch_id)->first()){
-        $save = $db->db->insert([
-            'branch_id' => $branch_id,
-            'settings'  => $jsonSettings
-        ]);
-        return $save ?: false;
-    } else {
-        $save = $db->db->where("branch_id", $branch_id)->update([
-            'settings' => $jsonSettings
-        ]);
-        return $save ?: false;
+        if(!$db->db->where("branch_id", $branch_id)->first()){
+            $save = $db->db->insert([
+                'branch_id' => $branch_id,
+                'settings'  => $jsonSettings
+            ]);
+            return $save ?: false;
+        } else {
+            $save = $db->db->where("branch_id", $branch_id)->update([
+                'settings' => $jsonSettings
+            ]);
+            return $save ?: false;
+        }
     }
-}
-
 }

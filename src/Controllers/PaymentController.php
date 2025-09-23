@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\Tables;
 use App\Models\Payment;
+use App\Models\PaymentMethods;
 use App\Core\DB;
 use App\Utils\JsonKit;
 
@@ -597,6 +598,16 @@ class PaymentController
             );
         } catch (\Throwable $e) {
             echo JsonKit::fail("Hata: " . $e->getMessage(), 500);
+        }
+    }
+
+    public function savePaymentMethods(){
+        $payload = json_decode(file_get_contents("php://input"),true);
+        if($payload){
+            $save = PaymentMethods::save($payload);
+            if($save){
+                echo JsonKit::success("Ödeme yöntemleri kaydedildi");
+            }
         }
     }
 }
