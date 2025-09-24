@@ -28,6 +28,10 @@ class ApiRoutes
             $router->post('/printers/template/preview', [\App\Controllers\PrinterController::class, 'previewTemplate']);
             $router->get('/getBusinessHours', [\App\Controllers\APIv1Controller::class, 'getBusinessHours']);
             $router->get('/getBranchHolidays', [\App\Controllers\APIv1Controller::class, 'getBranchHolidays']);
+            $router->get('/inventory/items', [\App\Controllers\IngredientsController::class, 'getAllIngredients']);
+            $router->post('/inventory/items', [\App\Controllers\IngredientsController::class, 'saveIngredient']);
+            $router->delete('/inventory/items/{id}', [\App\Controllers\IngredientsController::class, 'removeIngredient']);
+            $router->get('/suppliers', [\App\Controllers\SuppliersController::class, 'getSuppliers']);
             $router->post('/saveSettings', [\App\Controllers\APIv1Controller::class, 'saveSettings']);
             $router->post('/payment-methods/save', [\App\Controllers\PaymentController::class, 'savePaymentMethods']);
         });

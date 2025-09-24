@@ -33,18 +33,18 @@ class APIv1Controller
         session_start();
         if (($_SERVER["REQUEST_METHOD"] ?? "GET") !== "POST") {
             JsonKit::fail("method_not_allowed", 405);
-            exit();
+            exit;
         }
         $ctype = $_SERVER["CONTENT_TYPE"] ?? "";
         if (!str_starts_with(strtolower($ctype), "application/json")) {
             JsonKit::fail("invalid_content_type", 415);
-            exit();
+            exit;
         }
 
         $csrfHeader = $_SERVER["HTTP_X_CSRF_TOKEN"] ?? "";
         if (!hash_equals($_SESSION["csrf_token"] ?? "", $csrfHeader)) {
             JsonKit::fail("csrf_failed", 419);
-            exit();
+            exit;
         }
 
         $data = json_decode(file_get_contents("php://input"), true) ?: [];
@@ -60,9 +60,17 @@ class APIv1Controller
         $ip = $_SERVER["REMOTE_ADDR"] ?? "0.0.0.0";
         if ($this->tooManyAttempts($ip)) {
             JsonKit::fail("too_many_attempts", 429);
-            exit();
+            exit;
         }
         $user = $this->user->findByUsername($username);
+
+        
+        $permissions = $this->getUserPermissions($user['id']);
+
+        if (empty($permissions['merged_permissions']['super_admin']) || empty($permissions['merged_permissions']['admin.panel.login'])) {
+            JsonKit::fail("Yetkisiz erişim.", 403);
+            exit;
+        }
 
         $hash = $user["password_hash"] ?? "";
         $hash =
@@ -107,6 +115,47 @@ class APIv1Controller
         ]);
         exit();
     }
+
+    private function getUserPermissions(int $userId): array {
+        $rows = DB::table('user_roles')
+            ->join('roles', 'role_id', '=', 'roles.id')
+            ->where('user_id', $userId)
+            ->select([
+                'roles.id AS role_id',
+                'roles.name AS role_name',
+                'roles.permissions AS permissions_json'
+            ])
+            ->get();
+
+        $roles   = [];
+        $merged  = [];
+
+        foreach ($rows as $r) {
+            $perm = json_decode($r['permissions_json'] ?? '[]', true);
+            if (!is_array($perm)) { $perm = []; }
+
+            $roles[] = [
+                'id'          => (int)$r['role_id'],
+                'name'        => $r['role_name'],
+                'permissions' => $perm,
+            ];
+
+            foreach ($perm as $key => $val) {
+                if (!isset($merged[$key])) {
+                    $merged[$key] = $val;
+                } else {
+                    $merged[$key] = (bool)$merged[$key] || (bool)$val;
+                }
+            }
+        }
+
+        return [
+            'user_id'            => $userId,
+            'roles'              => $roles,
+            'merged_permissions' => $merged
+        ];
+    }
+
 
     private function tooManyAttempts(
         string $ip,

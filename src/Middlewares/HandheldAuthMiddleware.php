@@ -40,6 +40,7 @@ final class HandheldAuthMiddleware
         "/admin/hardware",
         "/admin/integrations",
         "/admin/inventory",
+        "/admin/inventory/recipes",
         "/admin/notifications",
         "/admin/payments",
         "/admin/products",

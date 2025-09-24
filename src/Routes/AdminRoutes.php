@@ -18,6 +18,7 @@ class AdminRoutes
             $router->get('/hardware', [PagesController::class, 'settings/hardware']);
             $router->get('/integrations', [PagesController::class, 'settings/integrations']);
             $router->get('/inventory', [PagesController::class, 'settings/inventory']);
+            $router->get('/inventory/recipes', [PagesController::class, 'settings/recipes']);
             $router->get('/notifications', [PagesController::class, 'settings/notifications']);
             $router->get('/payments', [PagesController::class, 'settings/payments']);
             $router->get('/products', [PagesController::class, 'settings/products']);
